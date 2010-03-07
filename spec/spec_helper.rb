@@ -4,4 +4,26 @@ $:.unshift(File.join(SPEC_ROOT, "..", "lib"))
 require 'machinist/object'
 require 'mocha'
 
+Spec::Runner.configure do |config|
+  config.mock_with :mocha
+end
+
 require 'sentry'
+
+class MockSentry < Sentry::Base
+  %w{ creatable? readable? updatable? deletable? }.each do |m|
+    define_method m do
+      true
+    end
+  end
+  
+  protected
+  def a_protected_method
+    true
+  end
+  
+  private
+  def a_private_method
+    true
+  end
+end

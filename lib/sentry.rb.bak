@@ -3,6 +3,10 @@
 # Get for example AdminPostSentry for the admin role
 # if the user has many roles
 
+# privileges - create, read
+# actions - index, show
+# set the sentry as an accessor variable and delegate
+
 class Object
   
   def for_user(subject, options = {})

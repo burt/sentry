@@ -1,4 +1,4 @@
-module Privileges
+module Sentry
   class Factory
   end
 end

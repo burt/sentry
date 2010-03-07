@@ -1,5 +1,5 @@
-module Sentry
-  
+module Sentry 
+   
   class Configuration
     attr_accessor :name
 
