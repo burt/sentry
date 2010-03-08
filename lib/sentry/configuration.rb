@@ -1,27 +1,25 @@
 module Sentry 
    
   class Configuration
-    attr_accessor :name
-
+    attr_accessor :user_method
+    attr_accessor :rights
+    
     def initialize
-      @name = 'test'
+      @user_method = 'current_user'
+      @rights = {}
     end
+    
   end
 
   class << self
     attr_accessor :configuration
   end
 
-  # Configure Clearance someplace sensible,
-  # like config/initializers/clearance.rb
-  #
-  # @example
-  #   Clearance.configure do |config|
-  #     config.mailer_sender = 'donotreply@example.com'
-  #   end
-  def self.configure
-    self.configuration ||= Configuration.new
-    yield(configuration)
+  def self.configure(&block)
+    returning Configuration.new do |c|
+      self.configuration = c
+      c.instance_eval(&block)
+    end
   end
   
 end

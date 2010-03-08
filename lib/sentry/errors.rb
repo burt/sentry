@@ -1,3 +1,3 @@
 module Sentry
-  class InvalidSetup < StandardError; end
+  class InvalidOverride < StandardError; end
 end

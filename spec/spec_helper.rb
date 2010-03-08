@@ -10,20 +10,27 @@ end
 
 require 'sentry'
 
-class MockSentry < Sentry::Base
-  %w{ creatable? readable? updatable? deletable? }.each do |m|
-    define_method m do
+module Specs
+  
+  class MockModel; end
+  
+  class MockModelSentry < Sentry::Base
+    %w{ creatable? readable? updatable? deletable? }.each do |m|
+      define_method m do
+        true
+      end
+    end
+  
+    protected
+    def a_protected_method
+      true
+    end
+  
+    private
+    def a_private_method
       true
     end
   end
   
-  protected
-  def a_protected_method
-    true
-  end
-  
-  private
-  def a_private_method
-    true
-  end
+  class MockModelSentry2 < MockModelSentry; end
 end
