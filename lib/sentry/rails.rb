@@ -11,24 +11,25 @@ module Sentry
     def initialize
       super
       instance = self
-      # TODO: check the values aren't already defined
-      
-      Sentry.configuration.rights.each do |r|
-        method_name = "can_#{r}?"
-        metaclass.class_eval do
-          define_method(method_name) do |model|
-            sentry = Sentry::Factory.new(model, instance.current_user, :rights => [r]).create
-            sentry.send(method_name)
+      # TODO: check the values aren't already defined 
+      Sentry.configuration.rights.each do |k, v|
+        (class << self; self; end).class_eval do
+          define_method(v.method_name) do |model|
+            sentry = Sentry::Factory.new(model, sentry_user, :rights => {k => v}).create
+            sentry.send(v.method_name)
           end
         end
-        self.class.send :helper_method, method_name
+        self.class.send :helper_method, v.method_name
       end
     end
 
     def user_not_authorized
-      flash[:error] = "You don't have access to this section."
-      # redirect_to(:back) and return
-      redirect_to root_path and return
+      flash[:error] = Sentry.configuration.not_permitted_message
+      redirect_to Sentry.configuration.not_permitted_redirect and return
+    end
+    
+    def sentry_user
+      self.send Sentry.configuration.user_method
     end
     
     module ClassMethods
@@ -41,9 +42,10 @@ module Sentry
             controller.send(callback.to_sym)
           end
           subject = controller.current_user
-          sentry = Sentry::Factory.new(model, subject, opts.merge(:raise => true)).create
-          validate = [*opts[:validate]] || []
-          validate.each { |m| sentry.send("can_#{m}?") }
+          sentry = Sentry::Factory.new(model, subject, opts.merge(:authorize => true)).create
+          puts "::: ok so are we allowed???"
+          # validate = [*opts[:validate]] || []
+          # validate.each { |m| sentry.send("can_#{m}?") }
         end
       end
       

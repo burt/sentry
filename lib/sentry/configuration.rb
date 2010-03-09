@@ -1,37 +1,18 @@
-module Sentry 
-  
-  class Right
-    
-    attr_reader :default, :actions
-    
-    def initialize(opts)
-      @default = opts[:default] || false
-      @actions = opts[:actions]
-    end
-    
-  end
+module Sentry
   
   class Configuration
     attr_accessor :user_method
+    attr_accessor :not_permitted_redirect
+    attr_accessor :not_permitted_message
     
     def rights(&block)
       if block_given?
-        @rights = {}
-        self.instance_eval(&block)
+        Sentry::RightsBuilder.new(@rights = {}).instance_eval(&block)
       else
         @rights
       end
     end
     
-    def method_missing(sym, *args, &block)
-      @rights[sym] = Right.new(args.extract_options!)
-    end
-    
-    #def to_hash
-    # returning Hash.new do |h|
-    #    [:user_method, :rights].each { |m| h[m] = self.send(m) }
-    #  end
-    #end
   end
 
   class << self
@@ -40,16 +21,18 @@ module Sentry
 
   def self.configure(&block)
     returning Configuration.new do |c|
+      yield(c)
       self.configuration = c
-      c.instance_eval(&block) if block_given?
     end
   end
 
 end
 
-Sentry.configure do
-  user_method = 'current_user'
-  rights do
+Sentry.configure do |c|
+  c.user_method = :current_user
+  c.not_permitted_redirect = :root_path
+  c.not_permitted_message = 'You are not permitted to visit this section.'
+  c.rights do
     create :actions => [:new, :create]
     read :actions => [:index, :show]
     update :actions => [:edit, :update]
@@ -57,22 +40,4 @@ Sentry.configure do
   end
 end
 
-puts "Rights:"
-puts Sentry.configuration.rights.inspect
-puts ""
-
-__END__
-
-Sentry.configure do
-  
-  user_method = 'current_user'
-  # rights = [:create, :read, :update, :delete]
-  
-  rights do
-    create :actions => [:new, :edit]
-    read :actions => [:index, :show], :default => true
-    update
-    delete
-  end
-  
-end
+puts Sentry.configuration.inspect

@@ -5,8 +5,8 @@ module Sentry
       raise ArgumentError, "model cannot be nil" if model.nil?
       raise ArgumentError, "subject cannot be nil" if subject.nil?
       raise ArgumentError, "opts must be a hash" unless opts.is_a?(Hash)
-      @model, @subject, @opts = model, subject, opts
-      @opts.reverse_merge!(Sentry.configuration.to_hash)
+      rights = Sentry.configuration.rights
+      @model, @subject, @opts = model, subject, rights, opts
     end
     
     def create

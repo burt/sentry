@@ -1,54 +1,38 @@
 module Sentry
   class Base
 
-    attr_accessor :model, :subject
+    attr_accessor :model, :subject, :rights
 
-    def initialize(model, subject, opts = {})
-      @model, @subject, @opts = model, subject, opts
-      
-      add_default_auth_methods(self)
-      add_raise_aliases(self)
-    end
-    
-    def each_right
-      rights.each do |k|
-        method_name = "can_#{k}?"
-        yield k, method_name
-      end
+    def initialize(model, subject, rights, opts = {})
+      @model, @subject, @rights, @opts = model, subject, rights, opts
+      apply_methods
     end
     
     protected
     
-    def rights
-      @opts[:rights] || []
+    def authorize?
+      @opts[:authorize] == true
     end
     
-    def raise_not_permitted?
-      @opts[:raise] == true
-    end
-    
-    def add_default_auth_methods(instance)
-      # TODO: test these aren't added to other instances
-      # TODO: test the subclass methods don't get overwritten
-      metaclass.class_eval do
-        instance.each_right do |k, m|
-          define_method(m) { false } unless instance.respond_to?(m)
-        end
-      end
-    end
-    
-    # TODO: refactor to loop over rights only once
-    def add_raise_aliases(instance)
-      metaclass.class_eval do
-        instance.each_right do |k, m|
-          alias_name = "old_#{m}"
-          alias_method "old_#{m}", m
-          define_method m do
-            permitted = self.send alias_name
-            if raise_not_permitted? && !permitted
-              raise Sentry::NotAuthorized, "Not permitted! [model=#{model}, subject=#{subject}]"
+    # TODO: test and comment!
+    # TODO: test these aren't added to other instances
+    # TODO: test the subclass methods don't get overwritten
+    def apply_methods
+      instance = self
+      Sentry.configuration.rights.each do |k, v|
+        (class << self; self; end).class_eval do
+          method = v.method_name
+          
+          define_method(method) { v.default_value } unless instance.respond_to?(method)
+          
+          alias_name = "old_#{method}"
+          alias_method alias_name, method
+          define_method method do
+            returning self.send(alias_name) do |permitted| 
+              if instance.authorize? && !permitted
+                raise Sentry::NotAuthorized, "Not permitted! [model=#{model}, subject=#{subject}]"
+              end
             end
-            permitted
           end
         end
       end
