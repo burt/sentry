@@ -39,5 +39,3 @@ Sentry.configure do |c|
     delete :actions => [:destroy]
   end
 end
-
-puts Sentry.configuration.inspect

@@ -8,11 +8,21 @@ module Sentry
       apply_methods
     end
     
-    protected
+    def action_permitted?(action)
+      r = rights.values.select {|r| r.actions.include?(action.to_sym) }
+      r.all? { |r| right_permitted?(r) }
+    end
     
-    def authorize?
+    def right_permitted?(right)
+      self.send right.method_name
+    end
+    
+    def authorizer?
+      puts "authorizer called #{@opts.inspect} #{@opts[:authorize] }"
       @opts[:authorize] == true
     end
+    
+    protected
     
     # TODO: test and comment!
     # TODO: test these aren't added to other instances
@@ -23,13 +33,14 @@ module Sentry
         (class << self; self; end).class_eval do
           method = v.method_name
           
-          define_method(method) { v.default_value } unless instance.respond_to?(method)
+          define_method(method) { v.default } unless instance.respond_to?(method)
           
           alias_name = "old_#{method}"
           alias_method alias_name, method
           define_method method do
-            returning self.send(alias_name) do |permitted| 
-              if instance.authorize? && !permitted
+            returning self.send(alias_name) do |permitted|
+              puts permitted
+              if instance.authorizer? && !permitted
                 raise Sentry::NotAuthorized, "Not permitted! [model=#{model}, subject=#{subject}]"
               end
             end

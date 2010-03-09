@@ -7,7 +7,7 @@ module Sentry
     def initialize(name, opts)
       @name = name
       @default = opts[:default] || false
-      @actions = opts[:actions]
+      @actions = opts[:actions] || []
     end
     
     def method_name

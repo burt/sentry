@@ -1,5 +1,3 @@
-# TODO: remove duplicate in can_ method name creation
-
 module Sentry
   module Rails
     
@@ -11,7 +9,7 @@ module Sentry
     def initialize
       super
       instance = self
-      # TODO: check the values aren't already defined 
+      # TODO: rspec check the values aren't already defined 
       Sentry.configuration.rights.each do |k, v|
         (class << self; self; end).class_eval do
           define_method(v.method_name) do |model|
@@ -25,7 +23,8 @@ module Sentry
 
     def user_not_authorized
       flash[:error] = Sentry.configuration.not_permitted_message
-      redirect_to Sentry.configuration.not_permitted_redirect and return
+      redirect_to Sentry.configuration.not_permitted_redirect.to_s
+      return
     end
     
     def sentry_user
@@ -34,18 +33,16 @@ module Sentry
     
     module ClassMethods
       
-      def auth_filter(callback, opts = {})
+      def authorize(callback, opts = {})
         self.before_filter(opts) do |controller|
           model = if callback.is_a?(Proc)
             controller.instance_eval &callback
           else
             controller.send(callback.to_sym)
           end
-          subject = controller.current_user
-          sentry = Sentry::Factory.new(model, subject, opts.merge(:authorize => true)).create
-          puts "::: ok so are we allowed???"
-          # validate = [*opts[:validate]] || []
-          # validate.each { |m| sentry.send("can_#{m}?") }
+          user = controller.sentry_user
+          sentry = Sentry::Factory.new(model, user, opts.merge(:authorize => true)).create
+          sentry.action_permitted?(controller.action_name)
         end
       end
       

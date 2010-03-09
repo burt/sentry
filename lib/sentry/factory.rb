@@ -6,11 +6,11 @@ module Sentry
       raise ArgumentError, "subject cannot be nil" if subject.nil?
       raise ArgumentError, "opts must be a hash" unless opts.is_a?(Hash)
       rights = Sentry.configuration.rights
-      @model, @subject, @opts = model, subject, rights, opts
+      @model, @subject, @rights, @opts = model, subject, rights, opts
     end
     
     def create
-      sentry_class.new(@model, @subject, @opts)
+      sentry_class.new(@model, @subject, @rights, @opts)
     end
     
     def sentry_class
