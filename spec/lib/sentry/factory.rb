@@ -1,5 +1,8 @@
+# TODO: test the option merging
+
 describe Sentry::Factory do
-  
+
+=begin
   describe "at construction" do
   
     it "should raise an argument error given no source" do
@@ -44,7 +47,6 @@ describe Sentry::Factory do
           @factory.create.should be_an_instance_of Specs::MockModelSentry
           @factory.create.model.should == @model
           @factory.create.subject.should == @subject
-          @factory.create.opts.should == {}
         end
       
       end
@@ -64,21 +66,22 @@ describe Sentry::Factory do
           @factory.create.should be_an_instance_of Specs::MockModelSentry2
           @factory.create.model.should == @model
           @factory.create.subject.should == @subject
-          @factory.create.opts.should == @opts
         end
       
       end
       
     end
     
-    describe "where the corresponding sentry class does not exist" do
-      
+    it "should raise SentryNotDefined when the corresponding sentry class does not exist" do
+      @factory = Sentry::Factory.new(mock, @subject)
+      lambda { @factory.create }.should raise_error(Sentry::SentryNotDefined)
     end
     
-    describe "where the corresponding sentry class does not inherit from Sentry::Base" do
-      
+    it "should raise SentryNotDefined when the corresponding sentry class does not inherit from Sentry::Base" do
+      @factory = Sentry::Factory.new(@model, @subject, :class => 'Specs::BadSentry')
+      lambda { @factory.create }.should raise_error(Sentry::InvalidSentry)
     end
   
   end
-  
+=end 
 end

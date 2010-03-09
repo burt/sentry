@@ -14,23 +14,10 @@ module Specs
   
   class MockModel; end
   
-  class MockModelSentry < Sentry::Base
-    %w{ creatable? readable? updatable? deletable? }.each do |m|
-      define_method m do
-        true
-      end
-    end
-  
-    protected
-    def a_protected_method
-      true
-    end
-  
-    private
-    def a_private_method
-      true
-    end
-  end
+  class MockModelSentry < Sentry::Base; end
   
   class MockModelSentry2 < MockModelSentry; end
+  
+  class BadSentry; end
+  
 end

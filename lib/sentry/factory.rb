@@ -6,6 +6,7 @@ module Sentry
       raise ArgumentError, "subject cannot be nil" if subject.nil?
       raise ArgumentError, "opts must be a hash" unless opts.is_a?(Hash)
       @model, @subject, @opts = model, subject, opts
+      @opts.reverse_merge!(Sentry.configuration.to_hash)
     end
     
     def create
@@ -13,7 +14,15 @@ module Sentry
     end
     
     def sentry_class
-      "#{@model.class.name}Sentry".constantize
+      klass = begin
+        sentry_class_name.constantize
+      rescue => e
+        raise Sentry::SentryNotDefined, "Sentry '#{sentry_class_name}' is not defined"
+      end
+      unless klass.ancestors.include?(Sentry::Base)
+        raise Sentry::InvalidSentry, "Sentry '#{sentry_class_name}' does not extend Sentry::Base"
+      end
+      klass
     end
     
     def sentry_class_name
