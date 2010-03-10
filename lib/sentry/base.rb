@@ -18,7 +18,6 @@ module Sentry
     end
     
     def authorizer?
-      puts "authorizer called #{@opts.inspect} #{@opts[:authorize] }"
       @opts[:authorize] == true
     end
     
@@ -29,7 +28,7 @@ module Sentry
     # TODO: test the subclass methods don't get overwritten
     def apply_methods
       instance = self
-      Sentry.configuration.rights.each do |k, v|
+      Sentry.rights.each do |k, v|
         (class << self; self; end).class_eval do
           method = v.method_name
           
@@ -39,7 +38,6 @@ module Sentry
           alias_method alias_name, method
           define_method method do
             returning self.send(alias_name) do |permitted|
-              puts permitted
               if instance.authorizer? && !permitted
                 raise Sentry::NotAuthorized, "Not permitted! [model=#{model}, subject=#{subject}]"
               end

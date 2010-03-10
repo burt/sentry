@@ -9,8 +9,9 @@ module Sentry
     def initialize
       super
       instance = self
-      # TODO: rspec check the values aren't already defined 
-      Sentry.configuration.rights.each do |k, v|
+      # TODO: rspec
+      # TODO: check the values aren't already defined 
+      Sentry.rights.each do |k, v|
         (class << self; self; end).class_eval do
           define_method(v.method_name) do |model|
             sentry = Sentry::Factory.new(model, sentry_user, :rights => {k => v}).create
@@ -33,20 +34,44 @@ module Sentry
     
     module ClassMethods
       
+      def sentry(&block)
+        FilterBuilder.new(self).instance_eval(&block)
+      end
+      
+    end
+    
+    class FilterBuilder
+      
+      def initialize(klass)
+        @klass = klass
+      end
+      
       def authorize(callback, opts = {})
-        self.before_filter(opts) do |controller|
-          model = if callback.is_a?(Proc)
-            controller.instance_eval &callback
-          else
-            controller.send(callback.to_sym)
-          end
-          user = controller.sentry_user
-          sentry = Sentry::Factory.new(model, user, opts.merge(:authorize => true)).create
+        before_filter(callback, opts.merge(:authorize => true)) do |sentry, controller|
           sentry.action_permitted?(controller.action_name)
         end
       end
       
-    end 
+      def filter(callback, opts = {})
+        before_filter(callback, opts) do |sentry, controller|
+          #sentry.action_permitted?(controller.action_name)
+          puts "::>>> before_filter called #{callback}"
+          # sentry.filter_action(controller.action_name)
+        end
+      end
+      
+      private
+      
+      def before_filter(callback, opts)
+        @klass.before_filter(opts) do |controller|
+          model = controller.send(callback.to_sym)
+          user = controller.sentry_user
+          sentry = Sentry::Factory.new(model, user, opts).create
+          yield sentry, controller
+        end
+      end
+      
+    end
       
   end
 end
