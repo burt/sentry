@@ -2,8 +2,8 @@ module Sentry
   class Factory
     
     def initialize(model, subject, opts = {})
-      raise ArgumentError, "model cannot be nil" if model.nil?
-      raise ArgumentError, "subject cannot be nil" if subject.nil?
+      raise Sentry::ModelNotFound, "model cannot be nil" if model.nil?
+      raise Sentry::SubjectNotFound, "subject cannot be nil" if subject.nil?
       raise ArgumentError, "opts must be a hash" unless opts.is_a?(Hash)
       @model, @subject, @rights, @opts = model, subject, Sentry.rights, opts
     end

@@ -8,17 +8,20 @@ module Sentry
       apply_methods
     end
     
+    def authorizer?
+      @opts[:authorize] == true
+    end
+    
+    def filter(action); end
+    
     def action_permitted?(action)
-      r = rights.values.select {|r| r.actions.include?(action.to_sym) }
-      r.all? { |r| right_permitted?(r) }
+      rights.children_with_matching_descendents(action).all? do |r|
+        self.right_permitted?(r)
+      end
     end
     
     def right_permitted?(right)
-      self.send right.method_name
-    end
-    
-    def authorizer?
-      @opts[:authorize] == true
+      self.send(right.action_name)
     end
     
     protected
@@ -30,7 +33,7 @@ module Sentry
       instance = self
       Sentry.rights.each do |k, v|
         (class << self; self; end).class_eval do
-          method = v.method_name
+          method = v.action_name
           
           define_method(method) { v.default } unless instance.respond_to?(method)
           

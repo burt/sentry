@@ -13,12 +13,12 @@ module Sentry
       # TODO: check the values aren't already defined 
       Sentry.rights.each do |k, v|
         (class << self; self; end).class_eval do
-          define_method(v.method_name) do |model|
+          define_method(v.action_name) do |model|
             sentry = Sentry::Factory.new(model, sentry_user, :rights => {k => v}).create
-            sentry.send(v.method_name)
+            sentry.send(v.action_name)
           end
         end
-        self.class.send :helper_method, v.method_name
+        self.class.send :helper_method, v.action_name
       end
     end
 
@@ -54,9 +54,7 @@ module Sentry
       
       def filter(callback, opts = {})
         before_filter(callback, opts) do |sentry, controller|
-          #sentry.action_permitted?(controller.action_name)
-          puts "::>>> before_filter called #{callback}"
-          # sentry.filter_action(controller.action_name)
+          sentry.filter(controller.action_name) 
         end
       end
       
@@ -64,11 +62,16 @@ module Sentry
       
       def before_filter(callback, opts)
         @klass.before_filter(opts) do |controller|
-          model = controller.send(callback.to_sym)
+          run_finder(controller, opts[:after]) unless opts[:after].nil?  
+          model = controller.instance_variable_get("@#{callback}".to_sym)
           user = controller.sentry_user
           sentry = Sentry::Factory.new(model, user, opts).create
           yield sentry, controller
         end
+      end
+      
+      def run_finder(controller, method)
+        controller.send(method, true) 
       end
       
     end
