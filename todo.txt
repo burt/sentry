@@ -1,2 +1,4 @@
 - Rspec
-- Add local support to disable auth?
+- Add a before filter to the sentries
+  - the default return is true
+  - it can be overridden

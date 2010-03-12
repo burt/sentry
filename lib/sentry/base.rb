@@ -11,7 +11,11 @@ module Sentry
       @options[:authorize] == true
     end
     
-    def filter(action); end # TODO: template method, validate response
+    def permitted?; true; end
+    
+    def forbidden?; false; end
+  
+    def filter(action); end
     
     def action_permitted?(action)
       rights.children_with_matching_descendents(action).all? do |r|
@@ -38,6 +42,8 @@ module Sentry
           alias_method alias_name, method
           define_method method do
             return true unless instance.enabled
+            return true unless instance.permitted?
+            return false if instance.forbidden?
             returning self.send(alias_name) do |permitted|
               if instance.authorizer? && !permitted
                 raise Sentry::NotAuthorized, "Not permitted! [model=#{model}, subject=#{subject}]"

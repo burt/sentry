@@ -36,7 +36,9 @@ module Sentry
     end
 
     def visit(&block)
-      each_value { |v| v.visit(&block) } unless empty?
+      # TODO: check this isn't yielding itself
+      # i.e. don't yield if root!
+      each_value { |v| v.visit(&block) } # and block.call(self)
       block.call(self)
     end
 

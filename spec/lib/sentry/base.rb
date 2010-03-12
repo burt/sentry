@@ -22,18 +22,26 @@ describe Sentry::Base do
       @sentry.should respond_to(:model, :subject, :rights, :options, :enabled)
     end
     
+    it "should respond to permitted?, :forbidden?, filter, action_permitted? and right_permitted?" do
+      @sentry.should respond_to(:permitted?, :forbidden?, :filter, :action_permitted?, :right_permitted?)
+    end
+    
     it "should not be an authorizer" do
-      @sentry.authorizer?.should == false
+      @sentry.authorizer?.should be_false
+    end
+    
+    it "should be permitted" do
+      @sentry.permitted?.should be_true
+    end
+    
+    it "should not be forbidden" do
+      @sentry.forbidden?.should be_false
     end
     
     it "should have an empty options hash" do
       @sentry.options.should be_an_instance_of(Hash)
       @sentry.options.should be_empty
     end
-    
-    it "should respond to filter, action_permitted? and right_permitted?" do
-      @sentry.should respond_to(:filter, :action_permitted?, :right_permitted?)
-    end   
     
   end
   
