@@ -13,8 +13,8 @@ module Sentry
       # TODO: check the values aren't already defined 
       Sentry.rights.each do |k, v|
         (class << self; self; end).class_eval do
-          define_method(v.action_name) do |model|
-            sentry = Sentry::Factory.new(model, sentry_user, :rights => {k => v}).create
+          define_method(v.action_name) do |model, *args|
+            sentry = Sentry::Factory.new(model, sentry_user, args.extract_options!).create
             sentry.send(v.action_name)
           end
         end

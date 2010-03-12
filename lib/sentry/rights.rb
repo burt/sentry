@@ -27,6 +27,10 @@ module Sentry
       @parent[action] = self if @parent
       @options = options
     end
+    
+    def default
+      @options[:default]
+    end
 
     def method_missing(sym, *args, &block)
       @children.send(sym, *args, &block)

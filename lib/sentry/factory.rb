@@ -5,11 +5,18 @@ module Sentry
       raise Sentry::ModelNotFound, "model cannot be nil" if model.nil?
       raise Sentry::SubjectNotFound, "subject cannot be nil" if subject.nil?
       raise ArgumentError, "opts must be a hash" unless opts.is_a?(Hash)
-      @model, @subject, @rights, @opts = model, subject, Sentry.rights, opts
+      @model, @subject, @opts = model, subject, opts
     end
     
     def create
-      sentry_class.new(@model, @subject, @rights, @opts)
+      returning sentry_class.new do |s|
+        s.model = @model
+        s.subject = @subject
+        s.opts = @opts
+        s.enabled = Sentry.configuration.enabled
+        s.rights = Sentry.rights
+        s.apply_methods
+      end
     end
     
     def sentry_class

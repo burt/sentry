@@ -1,0 +1,3 @@
+- Ability to turn permissions on/off in config and code
+- Test optional arguments to view helpers
+- Rspec
