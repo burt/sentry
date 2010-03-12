@@ -13,7 +13,7 @@ describe Sentry::Factory do
       lambda { Sentry::Factory.new({}, nil, {}) }.should raise_error(ArgumentError)
     end
   
-    it "should raise an argument error if opts isn't a hash" do
+    it "should raise an argument error if options isn't a hash" do
       lambda { Sentry::Factory.new({}, {}, 1) }.should raise_error(ArgumentError)
     end
   
@@ -54,8 +54,8 @@ describe Sentry::Factory do
       describe "and the class option set to Specs::MockModelSentry2" do
       
         before :each do
-          @opts = {:class => 'Specs::MockModelSentry2'}
-          @factory = Sentry::Factory.new(@model, @subject, @opts)
+          @options = {:class => 'Specs::MockModelSentry2'}
+          @factory = Sentry::Factory.new(@model, @subject, @options)
         end
       
         it "should have a sentry class name of Specs::MockModelSentry2" do

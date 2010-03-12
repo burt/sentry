@@ -1,18 +1,18 @@
 module Sentry
   class Factory
     
-    def initialize(model, subject, opts = {})
+    def initialize(model, subject, options = {})
       raise Sentry::ModelNotFound, "model cannot be nil" if model.nil?
       raise Sentry::SubjectNotFound, "subject cannot be nil" if subject.nil?
-      raise ArgumentError, "opts must be a hash" unless opts.is_a?(Hash)
-      @model, @subject, @opts = model, subject, opts
+      raise ArgumentError, "options must be a hash" unless options.is_a?(Hash)
+      @model, @subject, @options = model, subject, options
     end
     
     def create
       returning sentry_class.new do |s|
         s.model = @model
         s.subject = @subject
-        s.opts = @opts
+        s.options = @options
         s.enabled = Sentry.configuration.enabled
         s.rights = Sentry.rights
         s.apply_methods
@@ -32,7 +32,7 @@ module Sentry
     end
     
     def sentry_class_name
-      @opts[:class].nil? ? "#{@model.class.name}Sentry" : @opts[:class].to_s
+      @options[:class].nil? ? "#{@model.class.name}Sentry" : @options[:class].to_s
     end
     
   end

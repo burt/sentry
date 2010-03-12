@@ -1,10 +1,14 @@
 module Sentry
   class Base
 
-    attr_accessor :model, :subject, :rights, :opts, :enabled
+    attr_accessor :model, :subject, :rights, :options, :enabled
+    
+    def initialize
+      @options = {}
+    end
     
     def authorizer?
-      @opts[:authorize] == true
+      @options[:authorize] == true
     end
     
     def filter(action); end # TODO: template method, validate response

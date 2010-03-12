@@ -46,26 +46,26 @@ module Sentry
         @klass = klass
       end
       
-      def authorize(callback, opts = {})
-        before_filter(callback, opts.merge(:authorize => true)) do |sentry, controller|
+      def authorize(callback, options = {})
+        before_filter(callback, options.merge(:authorize => true)) do |sentry, controller|
           sentry.action_permitted?(controller.action_name)
         end
       end
       
-      def filter(callback, opts = {})
-        before_filter(callback, opts) do |sentry, controller|
+      def filter(callback, options = {})
+        before_filter(callback, options) do |sentry, controller|
           sentry.filter(controller.action_name) 
         end
       end
       
       private
       
-      def before_filter(callback, opts)
-        @klass.before_filter(opts) do |controller|
-          run_finder(controller, opts[:after]) unless opts[:after].nil?  
+      def before_filter(callback, options)
+        @klass.before_filter(options) do |controller|
+          run_finder(controller, options[:after]) unless options[:after].nil?  
           model = controller.instance_variable_get("@#{callback}".to_sym)
           user = controller.sentry_user
-          sentry = Sentry::Factory.new(model, user, opts).create
+          sentry = Sentry::Factory.new(model, user, options).create
           yield sentry, controller
         end
       end
