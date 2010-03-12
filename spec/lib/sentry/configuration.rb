@@ -6,10 +6,6 @@ describe Sentry::Configuration do
       @config = Sentry::Configuration.new
     end
     
-    it "should return an appropriate hash on to_hash" do
-      pending
-    end
-    
   end
   
 end

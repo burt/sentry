@@ -5,13 +5,11 @@ module Sentry
     attr_accessor :root
 
     def initialize(root = nil)
-      @root = root || Right.new("root")
+      @root = root
     end
 
     def method_missing(sym, *args, &block)
-      node = Right.new(sym, @root, args.extract_options!)
-      RightsBuilder.new(node).instance_eval(&block) if block_given?
-      self
+      Right.new(sym, @root, args.extract_options!, &block)
     end
 
   end
@@ -20,12 +18,13 @@ module Sentry
 
     attr_reader :action, :parent, :options, :children
 
-    def initialize(action, parent = nil, options = {})
+    def initialize(action, parent = nil, options = {}, &block)
       @children = {}
       @action = action
       @parent = parent
       @parent[action] = self if @parent
       @options = options
+      Sentry::RightsBuilder.new(self).instance_eval(&block) if block_given?
     end
     
     def default
@@ -63,7 +62,7 @@ module Sentry
 
   def self.rights(&block)
     if block_given?
-      @rights = RightsBuilder.new.instance_eval(&block).root
+      @rights = Sentry::Right.new("root", nil, {}, &block)
     else
       @rights
     end
