@@ -1,7 +1,7 @@
 module Sentry
   class Base
 
-    attr_accessor :model, :subject, :rights, :options, :enabled
+    attr_accessor :model, :subject, :rights, :options, :enabled, :current_action
     
     def initialize
       @options = {}
@@ -42,7 +42,7 @@ module Sentry
           alias_method alias_name, method
           define_method method do
             return true unless instance.enabled
-            return true unless instance.permitted?
+            return true if instance.permitted?
             return false if instance.forbidden?
             returning self.send(alias_name) do |permitted|
               if instance.authorizer? && !permitted
