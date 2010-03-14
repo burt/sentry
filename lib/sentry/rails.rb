@@ -54,7 +54,7 @@ module Sentry
       
       def filter(callback, options = {})
         before_filter(callback, options) do |sentry, controller|
-          sentry.filter(controller.action_name) 
+          sentry.filter(controller.action_name) if sentry.repond_to? :filter
         end
       end
       

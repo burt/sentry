@@ -3,6 +3,7 @@ $:.unshift(File.join(SPEC_ROOT, "..", "lib"))
 
 require 'machinist/object'
 require 'mocha'
+require 'pp'
 
 Spec::Runner.configure do |config|
   config.mock_with :mocha

@@ -8,22 +8,22 @@ module Sentry
       @model, @subject, @options = model, subject, options
     end
     
+    # TODO: raise an error if the rights are nil!!!
     def create
-      returning sentry_class.new do |s|
-        s.model = @model
-        s.subject = @subject
-        s.options = @options
-        s.enabled = Sentry.configuration.enabled
-        s.rights = Sentry.rights
-        s.apply_methods
-      end
+      s = sentry_class.new
+      s.model = @model
+      s.subject = @subject
+      s.options = @options
+      s.enabled = Sentry.configuration.enabled
+      s.rights = Sentry.rights
+      s.setup
     end
     
     def sentry_class
       klass = begin
         sentry_class_name.constantize
       rescue => e
-        raise Sentry::SentryNotDefined, "Sentry '#{sentry_class_name}' is not defined"
+        raise Sentry::SentryNotFound, "Sentry '#{sentry_class_name}' is not defined"
       end
       unless klass.ancestors.include?(Sentry::Base)
         raise Sentry::InvalidSentry, "Sentry '#{sentry_class_name}' does not extend Sentry::Base"

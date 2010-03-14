@@ -4,6 +4,7 @@ module Sentry
     attr_accessor :model, :subject, :rights, :options, :enabled, :current_action
     
     def initialize
+      @enabled = true
       @options = {}
     end
     
@@ -11,11 +12,9 @@ module Sentry
       @options[:authorize] == true
     end
     
-    def permitted?; true; end
+    def permitted?; false; end
     
     def forbidden?; false; end
-  
-    def filter(action); end
     
     def action_permitted?(action)
       rights.children_with_matching_descendents(action).all? do |r|
@@ -27,12 +26,17 @@ module Sentry
       self.send(right.action_name)
     end
     
-    # TODO: test and comment!
-    # TODO: test these aren't added to other instances
-    # TODO: test the subclass methods don't get overwritten
-    def apply_methods
+    def each_right
+      unless rights.nil?
+        rights.each do |k, v|
+          yield(k, v)
+        end
+      end
+    end
+    
+    def setup
       instance = self
-      @rights.each do |k, v|
+      each_right do |k, v|
         (class << self; self; end).class_eval do
           method = v.action_name
           
@@ -41,17 +45,26 @@ module Sentry
           alias_name = "old_#{method}"
           alias_method alias_name, method
           define_method method do
-            return true unless instance.enabled
-            return true if instance.permitted?
-            return false if instance.forbidden?
-            returning self.send(alias_name) do |permitted|
-              if instance.authorizer? && !permitted
-                raise Sentry::NotAuthorized, "Not permitted! [model=#{model}, subject=#{subject}]"
-              end
+            
+            permitted = if !instance.enabled
+              true
+            elsif instance.permitted?
+              true
+            elsif instance.forbidden?
+              false
+            else
+              self.send(alias_name)
             end
+            
+            if instance.authorizer? && !permitted
+              raise Sentry::NotAuthorized, "Not permitted! [model=#{model}, subject=#{subject}]"
+            end
+            
+            permitted
           end
         end
       end
+      self
     end
     
   end

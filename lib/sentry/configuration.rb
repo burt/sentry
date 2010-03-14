@@ -19,10 +19,9 @@ module Sentry
   end
 
   def self.configure(&block)
-    returning Configuration.new do |c|
-      yield(c)
-      self.configuration = c
-    end
+    config = Configuration.new
+    yield(config)
+    self.configuration = config
   end
 
 end

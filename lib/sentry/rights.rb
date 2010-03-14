@@ -28,7 +28,7 @@ module Sentry
     end
     
     def default
-      @options[:default]
+      @options[:default] == true
     end
 
     def method_missing(sym, *args, &block)
@@ -43,9 +43,9 @@ module Sentry
     end
 
     def matching_descendents(action)
-      returning [] do |found|
-        visit { |r| found << r if r.action == action.to_sym }
-      end
+      found = []
+      visit { |r| found << r if r.action == action.to_sym }
+      found
     end
 
     def children_with_matching_descendents(action)
