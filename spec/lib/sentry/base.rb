@@ -86,7 +86,7 @@ describe Sentry::Base do
         
         describe "when the can_ methods are called" do
           
-          it "should return the default value of the corresponding rights" do
+          it "should return the default right value" do
             @sentry.each_right { |k, v| @sentry.send(v.action_name).should == v.default }
           end
           
