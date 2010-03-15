@@ -6,8 +6,8 @@ describe Sentry::Base do
       @sentry = Sentry::Base.new
     end
     
-    it "should have the readers model, subject, rights, options, current_action and enabled" do
-      @sentry.should respond_to(:model, :subject, :rights, :options, :enabled)
+    it "should have the readers model, subject, rights, options, current_method and enabled" do
+      @sentry.should respond_to(:model, :subject, :rights, :options, :current_method, :enabled)
     end
     
     it "should respond to permitted?, forbidden?, each_right, action_permitted? and right_permitted?" do
@@ -26,10 +26,6 @@ describe Sentry::Base do
     it "should have an empty options hash" do
       @sentry.options.should be_an_instance_of(Hash)
       @sentry.options.should be_empty
-    end
-    
-    it "should have no current action" do
-      @sentry.current_action.should be_nil
     end
     
     it "should be enabled" do
@@ -128,7 +124,7 @@ describe Sentry::Base do
   describe "a mock post sentry given the rights create, read, update and delete" do
 
     before :each do
-      @sentry = Mocks::PostSentry.new
+      @sentry = Mocks::MockSentry.new
       @rights = Sentry.rights { create; read :default => true; update; delete }
       @sentry.rights = @rights
     end
@@ -198,6 +194,14 @@ describe Sentry::Base do
         @sentry.should_not permit(:can_delete?)
       end   
      
+      it "should set the current_method to the last can_ called" do
+        @sentry.current_method.should be_nil
+        @sentry.each_right do |k, v|
+          @sentry.right_permitted?(v)
+          @sentry.current_method.should == v.action
+        end
+      end
+
     end
 
   end
@@ -205,7 +209,7 @@ describe Sentry::Base do
   describe "a mock post sentry given the nested rights create [new, create], read [show, index], update [edit, update] and delete [destroy]" do
 
     before :each do
-      @sentry = Mocks::PostSentry.new
+      @sentry = Mocks::MockSentry.new
       @rights = Sentry.rights do
         create do
           new
@@ -235,6 +239,39 @@ describe Sentry::Base do
 
     it "should not permit the actions destroy and delete" do
       %w{ destroy delete }.each { |w| @sentry.should_not permit_action(w) }
+    end
+
+  end
+
+  describe "a Post created by a User named john" do
+    
+    before :each do
+      @john = Mocks::User.make(:name => 'john')
+      @paul = Mocks::User.make(:name => 'paul')
+      @george = Mocks::User.make(:name => 'george')
+      @ringo = Mocks::User.make(:name => 'ringo')
+      @users = [@john, @paul, @george, @ringo]
+      @post = Mocks::Post.make(:author => @john, :published => false, :new_record => false)
+    end
+
+    it "should be creatable by no-one" do
+      @users.each { |u| u.should_not be_able_to(:create, @post) }
+    end
+
+    it "should be readable by john and ringo" do
+      [@john, @ringo].each {|u| u.should be_able_to :read, @post }
+      [@paul, @george].each {|u| u.should_not be_able_to :read, @post }
+    end
+
+    it "should be updatable by john and ringo" do
+      [@john, @ringo].each {|u| u.should be_able_to :update, @post }
+      [@paul, @george].each {|u| u.should_not be_able_to :update, @post }
+    end
+
+    it "should be deletable by only ringo" do
+      @ringo.should be_able_to(:delete, @post)
+      @users.delete(@ringo)
+      @users.each { |u| u.should_not be_able_to(:delete, @post) }
     end
 
   end

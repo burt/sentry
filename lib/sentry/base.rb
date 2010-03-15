@@ -1,7 +1,7 @@
 module Sentry
   class Base
 
-    attr_accessor :model, :subject, :rights, :options, :enabled, :current_action
+    attr_accessor :model, :subject, :rights, :options, :enabled, :current_method
     
     def initialize
       @enabled = true
@@ -46,6 +46,8 @@ module Sentry
           alias_method alias_name, method
           define_method(method) do
             
+            instance.current_method = v.action
+
             permitted = if !instance.enabled
               true
             elsif instance.forbidden?

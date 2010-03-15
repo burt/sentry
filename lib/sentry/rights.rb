@@ -62,6 +62,10 @@ module Sentry
 
   end
 
+  class << self
+    attr_accessor :rights
+  end
+
   def self.rights(&block)
     if block_given?
       @rights = Sentry::Right.new("root", nil, {}, &block)

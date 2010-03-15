@@ -28,7 +28,7 @@ describe Sentry::Configuration do
     
   end
   
-  describe "the sentry module" do
+  describe "the Sentry module" do
     
     it "should respond to configuration" do
       Sentry.should respond_to :configuration

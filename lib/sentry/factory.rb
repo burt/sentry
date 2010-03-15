@@ -36,4 +36,9 @@ module Sentry
     end
     
   end
+
+  def self.build(model, subject, options = {})
+    Sentry::Factory.new(model, subject, options).create
+  end
+
 end

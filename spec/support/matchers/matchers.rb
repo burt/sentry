@@ -1,5 +1,4 @@
-# TODO: additional matchers
-# @user.should be_able_to :read, @post
+# TODO: consolidate shared code in matchers
 
 module Support
   module Matchers
@@ -53,12 +52,59 @@ module Support
 
     end
 
+    class BeAbleTo
+
+      def initialize(method, model, options = {})
+        @method = method
+        @model = model
+        @options = options
+      end
+
+      def matches?(subject)
+        @subject = subject
+        @sentry = Sentry.build(@model, @subject, @options)
+
+        begin
+          @result = @sentry.action_permitted?(@method)
+        rescue Sentry::NotAuthorized => e
+          @error = e
+        end
+  
+        if authorizer?
+          @error.nil? && @result == true          
+        else
+          @result == true
+        end
+      end
+
+      def failure_message_for_should
+        returning "expected #{@subject.inspect} to be able to #{@method} #{@model}" do |m|
+          m << " and not raise Sentry::NotAuthorized" if authorizer?
+        end
+      end
+
+      def failure_message_for_should_not
+        returning "expected #{@subject.inspect} not to be able to #{@method} #{@model}" do |m|
+          m << " and raise Sentry::NotAuthorized" if authorizer?
+        end
+      end
+
+      def authorizer?
+        @sentry && @sentry.authorizer?
+      end
+
+    end
+
     def permit(method)
       Permit.new(method)
     end
 
     def permit_action(action)
       Permit.new(action, true)
+    end
+
+    def be_able_to(method, model, options = {})
+      BeAbleTo.new(method, model, options)
     end
 
   end

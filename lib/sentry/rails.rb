@@ -14,7 +14,7 @@ module Sentry
       Sentry.rights.each do |k, v|
         (class << self; self; end).class_eval do
           define_method(v.action_name) do |model, *args|
-            sentry = Sentry::Factory.new(model, sentry_user, args.extract_options!).create
+            sentry = Sentry.build(model, sentry_user, args.extract_options!)
             sentry.send(v.action_name)
           end
         end
@@ -65,7 +65,7 @@ module Sentry
           run_finder(controller, options[:after]) unless options[:after].nil?  
           model = controller.instance_variable_get("@#{callback}".to_sym)
           user = controller.sentry_user
-          sentry = Sentry::Factory.new(model, user, options).create
+          sentry = Sentry.build(model, user, options)
           yield sentry, controller
         end
       end
