@@ -48,10 +48,10 @@ module Sentry
             
             permitted = if !instance.enabled
               true
-            elsif instance.permitted?
-              true
             elsif instance.forbidden?
               false
+            elsif instance.permitted?
+              true
             else
               self.send(alias_name)
             end

@@ -1,3 +1,5 @@
+# TODO: dry up each_right assertions
+
 describe Sentry::Base do
   
   describe "a new sentry base" do
@@ -100,6 +102,12 @@ describe Sentry::Base do
             @sentry.each_right { |k, v| @sentry.send(v.action_name).should be_true }
           end
           
+          it "should return false when permitted and forbidden" do
+            @sentry.stubs(:permitted?).returns(true)
+            @sentry.stubs(:forbidden?).returns(true)
+            @sentry.each_right { |k, v| @sentry.send(v.action_name).should be_false }
+          end
+          
           it "should return false when forbidden" do
             @sentry.stubs(:forbidden?).returns(true)
             @sentry.each_right { |k, v| @sentry.send(v.action_name).should be_false }
@@ -129,6 +137,12 @@ describe Sentry::Base do
           it "should not raise Sentry::NotAuthorized when permitted is true" do
             @sentry.stubs(:permitted?).returns(true)
             @sentry.each_right { |k, v| lambda { @sentry.send(v.action_name) }.should_not raise_error(Sentry::NotAuthorized) }
+          end
+          
+          it "should raise Sentry::NotAuthorized when forbidden is true and permitted is true" do
+            @sentry.stubs(:permitted?).returns(true)
+            @sentry.stubs(:forbidden?).returns(true)
+            @sentry.each_right { |k, v| lambda { @sentry.send(v.action_name) }.should raise_error(Sentry::NotAuthorized) }
           end
           
           it "should not raise Sentry::NotAuthorized when not enabled" do

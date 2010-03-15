@@ -27,13 +27,3 @@ module Sentry
 end
 
 Sentry.configuration = Sentry::Configuration.new
-
-__END__
-
-Sentry.configure do |c|
-  c.enabled = true
-  c.user_method = :current_user
-  c.not_permitted_redirect = :root_path
-  c.not_permitted_message = 'You are not permitted to visit this section.'
-end
-
