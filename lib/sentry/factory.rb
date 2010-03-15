@@ -5,10 +5,10 @@ module Sentry
       raise Sentry::ModelNotFound, "model cannot be nil" if model.nil?
       raise Sentry::SubjectNotFound, "subject cannot be nil" if subject.nil?
       raise ArgumentError, "options must be a hash" unless options.is_a?(Hash)
+      raise Sentry::MissingRights, "rights are nil or empty" if Sentry.rights.nil? || Sentry.rights.empty?
       @model, @subject, @options = model, subject, options
     end
     
-    # TODO: raise an error if the rights are nil!!!
     def create
       s = sentry_class.new
       s.model = @model

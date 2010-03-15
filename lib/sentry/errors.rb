@@ -4,4 +4,5 @@ module Sentry
   class NotAuthorized < StandardError; end
   class ModelNotFound < StandardError; end
   class SubjectNotFound < StandardError; end
+  class MissingRights < StandardError; end
 end

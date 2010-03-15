@@ -44,7 +44,7 @@ module Sentry
           
           alias_name = "old_#{method}"
           alias_method alias_name, method
-          define_method method do
+          define_method(method) do
             
             permitted = if !instance.enabled
               true
@@ -53,9 +53,9 @@ module Sentry
             elsif instance.permitted?
               true
             else
-              self.send(alias_name)
+              instance.send(alias_name)
             end
-            
+
             if instance.authorizer? && !permitted
               raise Sentry::NotAuthorized, "Not permitted! [model=#{model}, subject=#{subject}]"
             end
