@@ -14,8 +14,18 @@ require 'support/matchers/matchers'
 
 Spec::Runner.configure do |config|
   config.mock_with :mocha
+  
   config.include(Support::Matchers)
-  config.before { Sentry.configuration = Sentry::Configuration.new }
+  
+  config.before do
+    Sentry.configuration = Sentry::Configuration.new
+    Sentry.rights do
+      create { actions :new, :create }
+      read { actions :show, :index; default true }
+      update { actions :edit, :update }
+      delete { actions :destroy }
+    end
+  end
 end
 
 Sham.title { Faker::Lorem.sentence }

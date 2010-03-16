@@ -2,64 +2,46 @@ module Sentry
 
   class RightsBuilder
 
-    attr_accessor :root
+    attr_reader :rights
 
-    def initialize(root = nil)
-      @root = root
+    def initialize
+      @rights = {}
     end
 
     def method_missing(sym, *args, &block)
-      Right.new(sym, @root, args.extract_options!, &block)
+      @rights[sym] = Sentry::Right.new(sym, &block)
+      self
     end
 
   end
 
   class Right
 
-    attr_reader :action, :parent, :options, :children
+    attr_accessor :name
 
-    def initialize(action, parent = nil, options = {}, &block)
-      @children = {}
-      @action = action
-      @parent = parent
-      @parent[action] = self if @parent
-      @options = options
-      Sentry::RightsBuilder.new(self).instance_eval(&block) if block_given?
+    def initialize(name, &block)
+      @name = name
+      @actions = []
+      @default = false
+      self.instance_eval(&block) if block_given?
     end
     
-    def default
-      @options[:default] == true
+    def method_name
+      "can_#{name}?"
     end
-
-    def method_missing(sym, *args, &block)
-      @children.send(sym, *args, &block)
+    
+    def has_action?(action)
+      @actions.include?(action)
     end
-
-    def visit(&block)
-      # TODO: check this isn't yielding itself
-      # i.e. don't yield if root!
-      each_value { |v| v.visit(&block) } # and block.call(self)
-      block.call(self)
+    
+    def actions(*args)
+      args.empty? ? @actions : @actions = args
     end
-
-    def matching_descendents(action)
-      found = []
-      visit { |r| found << r if r.action == action.to_sym }
-      found
+    
+    def default(*args)
+      args.empty? ? @default : @default = args[0]
     end
-
-    def children_with_matching_descendents(action)
-      matching_descendents(action).map do |r|
-        current = r
-        while current.parent != self; current = current.parent; end
-        current
-      end.uniq
-    end
-
-    def action_name
-      "can_#{action}?"
-    end
-
+    
   end
 
   class << self
@@ -68,7 +50,7 @@ module Sentry
 
   def self.rights(&block)
     if block_given?
-      @rights = Sentry::Right.new("root", nil, {}, &block)
+      @rights = Sentry::RightsBuilder.new.instance_eval(&block).rights
     else
       @rights
     end
@@ -78,18 +60,16 @@ end
 
 Sentry.rights do
   create do
-    new
-    create
+    actions :new, :create
   end
   read do
-    index
-    show
+    default true
+    actions :index, :show
   end
   update do
-    edit
-    update
+    actions :edit, :update
   end
   delete do
-    destroy
+    actions :destroy
   end
 end

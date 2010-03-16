@@ -1,5 +1,9 @@
 describe Sentry::Base do
 
+  before :each do
+    @rights = Sentry.rights
+  end
+
   describe "a new sentry base" do
     
     before :each do
@@ -35,12 +39,6 @@ describe Sentry::Base do
     describe "with the rights create, read, update and delete" do
 
       before :each do
-        @rights = Sentry.rights do
-          create
-          read :default => true
-          update
-          delete
-        end
         @sentry.rights = Sentry.rights
       end
 
@@ -54,7 +52,7 @@ describe Sentry::Base do
       end
 
       it "should not respond to can_create?, can_read?, can_update? and can_delete?" do
-        @sentry.each_right { |k, v| @sentry.should_not respond_to(v.action_name) }
+        @sentry.each_right { |k, v| @sentry.should_not respond_to(v.method_name) }
       end
 
       describe "after setup" do
@@ -68,18 +66,18 @@ describe Sentry::Base do
         end
 
         it "should respond to can_create?, can_read?, can_update? and can_delete?" do
-          @sentry.each_right { |k, v| @sentry.should respond_to(v.action_name) }
+          @sentry.each_right { |k, v| @sentry.should respond_to(v.method_name) }
         end
 
         it "should not add can_create?, can_read?, can_update? or can_delete? to other instances" do
           @other_sentry = Sentry::Base.new
-          @rights.each { |k, v| @other_sentry.should_not respond_to(v.action_name) }
+          @rights.each { |k, v| @other_sentry.should_not respond_to(v.method_name) }
         end
 
         describe "when the can_ methods are called" do
           
           it "should return the default value for the corresponding right" do
-            @sentry.each_right { |k, v| @sentry.send(v.action_name).should == v.default }
+            @sentry.each_right { |k, v| @sentry.send(v.method_name).should == v.default }
           end
 
           it "should execute the appropriate can on a call to right_permitted?" do
@@ -88,35 +86,36 @@ describe Sentry::Base do
           
           it "should return true when disabled" do
             @sentry.enabled = false
-            @sentry.each_right { |k, v| @sentry.should permit(v.action_name) }
+            @sentry.each_right { |k, v| @sentry.should permit(v.method_name) }
           end
           
           it "should return true when permitted" do
             @sentry.stubs(:permitted?).returns(true)
-            @sentry.each_right { |k, v| @sentry.should permit(v.action_name) }
+            @sentry.each_right { |k, v| @sentry.should permit(v.method_name) }
           end
 
           it "should return false when forbidden" do
             @sentry.stubs(:forbidden?).returns(true)
-            @sentry.each_right { |k, v| @sentry.should_not permit(v.action_name) }
+            @sentry.each_right { |k, v| @sentry.should_not permit(v.method_name) }
           end
           
           it "should return false when permitted and forbidden" do
             @sentry.stubs(:permitted?).returns(true)
             @sentry.stubs(:forbidden?).returns(true)
-            @sentry.each_right { |k, v| @sentry.should_not permit(v.action_name) }
+            @sentry.each_right { |k, v| @sentry.should_not permit(v.method_name) }
           end   
           
           it "should raise Sentry::NotAuthorized when the method is not_permitted and the sentry is an authorizer" do
             @sentry.options[:authorize] = true
             @sentry.each_right do |k, v|  
-              @sentry.should_not permit(v.action_name) unless v.default
+              @sentry.should_not permit(v.method_name) unless v.default
             end
           end
 
         end
 
       end
+
     end
     
   end
@@ -125,7 +124,6 @@ describe Sentry::Base do
 
     before :each do
       @sentry = Mocks::MockSentry.new
-      @rights = Sentry.rights { create; read :default => true; update; delete }
       @sentry.rights = @rights
     end
 
@@ -135,7 +133,7 @@ describe Sentry::Base do
 
     it "should respond_to all cans except can_read?" do
       @sentry.rights.delete(:read)
-      @sentry.rights.each { |k, v| @sentry.should respond_to(v.action_name) }
+      @sentry.rights.each { |k, v| @sentry.should respond_to(v.method_name) }
       @sentry.should_not respond_to(:can_read?)
     end
 
@@ -146,7 +144,7 @@ describe Sentry::Base do
       end
 
       it "should respond to all can_ methods" do
-        @sentry.each_right { |k, v| @sentry.should respond_to(v.action_name) }
+        @sentry.each_right { |k, v| @sentry.should respond_to(v.method_name) }
       end
 
       it "should permit can_create?" do
@@ -198,7 +196,7 @@ describe Sentry::Base do
         @sentry.current_method.should be_nil
         @sentry.each_right do |k, v|
           @sentry.right_permitted?(v)
-          @sentry.current_method.should == v.action
+          @sentry.current_method.should == v.name
         end
       end
 
@@ -210,23 +208,6 @@ describe Sentry::Base do
 
     before :each do
       @sentry = Mocks::MockSentry.new
-      @rights = Sentry.rights do
-        create do
-          new
-          create
-        end
-        read :default => true do
-          show
-          index
-        end
-        update do
-          edit
-          update
-        end
-        delete do
-          destroy
-        end
-      end
       @sentry.rights = @rights
       @sentry.setup
     end
@@ -237,8 +218,8 @@ describe Sentry::Base do
       end
     end
 
-    it "should not permit the actions destroy and delete" do
-      %w{ destroy delete }.each { |w| @sentry.should_not permit_action(w) }
+    it "should not permit the action destroy" do
+      @sentry.should_not permit_action(:destroy)
     end
 
   end
@@ -275,5 +256,5 @@ describe Sentry::Base do
     end
 
   end
-  
+
 end

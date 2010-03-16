@@ -56,7 +56,7 @@ describe Sentry::Factory do
       end
 
       it "should return a sentry with the same enabled status as the singleton configuration on create" do
-        Sentry.configuration..enabled = true
+        Sentry.configuration.enabled = true
         @factory.create.enabled.should be_true
         Sentry.configuration.enabled = false
         @factory.create.enabled.should be_false

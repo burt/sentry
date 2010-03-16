@@ -17,13 +17,15 @@ module Sentry
     def forbidden?; false; end
     
     def action_permitted?(action)
-      rights.children_with_matching_descendents(action).all? do |r|
-        self.right_permitted?(r)
-      end
+      rights_with_action(action).all? { |r| self.right_permitted?(r) }
+    end
+    
+    def rights_with_action(action)
+      rights.values.select { |r| r.has_action?(action.to_sym) || r.name == action.to_sym }.uniq
     end
     
     def right_permitted?(right)
-      self.send(right.action_name)
+      self.send(right.method_name)
     end
     
     def each_right
@@ -38,7 +40,7 @@ module Sentry
       instance = self
       each_right do |k, v|
         (class << self; self; end).class_eval do
-          method = v.action_name
+          method = v.method_name
           
           define_method(method) { v.default } unless instance.respond_to?(method)
           
@@ -46,7 +48,7 @@ module Sentry
           alias_method alias_name, method
           define_method(method) do
             
-            instance.current_method = v.action
+            instance.current_method = v.name
 
             permitted = if !instance.enabled
               true
