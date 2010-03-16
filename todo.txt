@@ -1,4 +1,38 @@
-- Rspec
-- Add a before filter to the sentries
-  - the default return is true
-  - it can be overridden
+
+Change rails before filters to follow this structure:
+  
+  sentry do
+    authorize :index, :with => :posts
+    authorize [:show, :edit, :update, :destroy], :with => lambda { get_post }
+    authorize [:new, :create], :with => [:post]
+  end
+  
+
+
+Change rights for simplification:
+  
+  Sentry.rights do
+    
+    create do
+      actions :create, :new
+    end
+    
+    read do
+      default true
+      actions :show, :index
+    end
+    
+    update do
+      default false
+      actions :update, :edit
+    end
+    
+    delete do
+      actions destroy
+    end
+    
+    manage do
+      includes read, update, update, delete
+    end
+    
+  end
