@@ -1,20 +1,5 @@
 module Sentry
 
-  class RightsBuilder
-
-    attr_reader :rights
-
-    def initialize
-      @rights = {}
-    end
-
-    def method_missing(sym, *args, &block)
-      @rights[sym] = Sentry::Right.new(sym, &block)
-      self
-    end
-
-  end
-
   class Right
 
     attr_accessor :name
@@ -43,6 +28,21 @@ module Sentry
     end
     
   end
+  
+  class RightsBuilder
+
+    attr_reader :rights
+
+    def initialize
+      @rights = {}
+    end
+
+    def method_missing(sym, *args, &block)
+      @rights[sym] = Sentry::Right.new(sym, &block)
+      self
+    end
+
+  end
 
   class << self
     attr_accessor :rights
@@ -63,7 +63,6 @@ Sentry.rights do
     actions :new, :create
   end
   read do
-    default true
     actions :index, :show
   end
   update do

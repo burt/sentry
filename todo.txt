@@ -1,35 +1,8 @@
 
-Change rails before filters to follow this structure:
-  
-  sentry do
-    authorize :index, :on => :posts
-    authorize [:show, :edit, :update, :destroy], :on => lambda { get_post }
-    authorize [:new, :create], :on => [:post]
-  end
-  
-
-
-Change rights for simplification:
+Aggregate rights, e.g.
   
   Sentry.rights do
-    
-    create do
-      actions :create, :new
-    end
-    
-    read do
-      default true
-      actions :show, :index
-    end
-    
-    update do
-      default false
-      actions :update, :edit
-    end
-    
-    delete do
-      actions destroy
-    end
+    create; read; update; delete
     
     manage do
       includes create, read, update, delete
