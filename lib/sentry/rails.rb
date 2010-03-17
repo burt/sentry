@@ -91,7 +91,7 @@ module Sentry
             args
           end
           opts.merge!(:only => actions)
-          opts.delete(:only) if opts.has_key?(:exclude)
+          opts.delete(:only) if opts.has_key?(:except)
         end
         opts
       end
