@@ -1,3 +1,5 @@
+# TODO: rspec
+
 module Sentry
   module Rails
     
@@ -9,16 +11,15 @@ module Sentry
     def initialize
       super
       instance = self
-      # TODO: rspec
-      # TODO: check the values aren't already defined 
+      # TODO: check the methods aren't already defined 
       Sentry.rights.each do |k, v|
         (class << self; self; end).class_eval do
-          define_method(v.action_name) do |model, *args|
-            sentry = Sentry.build(model, sentry_user, args.extract_options!)
-            sentry.send(v.action_name)
+          define_method(v.method_name) do |model, *args|
+            sentry = Sentry.create(model, sentry_user, args.extract_options!)
+            sentry.send(v.method_name)
           end
         end
-        self.class.send :helper_method, v.action_name
+        self.class.send :helper_method, v.method_name
       end
     end
 
@@ -46,26 +47,31 @@ module Sentry
         @klass = klass
       end
       
-      def authorize(callback, options = {})
-        before_filter(callback, options.merge(:authorize => true)) do |sentry, controller|
+      def authorize(opts)
+        before_filter(opts.merge!(:authorize => true)) do |sentry, controller|
           sentry.action_permitted?(controller.action_name)
         end
       end
       
-      def filter(callback, options = {})
-        before_filter(callback, options) do |sentry, controller|
-          sentry.filter(controller.action_name) if sentry.repond_to? :filter
+      def filter(opts)
+        before_filter(opts) do |sentry, controller|
+          sentry.filter(controller.action_name) if sentry.respond_to? :filter
         end
       end
       
       private
       
-      def before_filter(callback, options)
-        @klass.before_filter(options) do |controller|
-          run_finder(controller, options[:after]) unless options[:after].nil?  
-          model = controller.instance_variable_get("@#{callback}".to_sym)
+      # TODO: raise if bad params passed
+      def before_filter(opts = {})
+        @klass.before_filter(opts) do |controller|
+          model = if opts[:with].is_a?(Proc)
+            controller.instance_eval(&opts[:with])
+          else
+            controller.instance_variable_get("@#{opts[:with]}".to_sym)
+          end 
+          puts "model #{model.inspect}"
           user = controller.sentry_user
-          sentry = Sentry.build(model, user, options)
+          sentry = Sentry.create(model, user, opts)
           yield sentry, controller
         end
       end

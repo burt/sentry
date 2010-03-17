@@ -34,10 +34,10 @@ describe Sentry::Factory do
 
   describe "the Sentry module" do
     
-    it "should create a new sentry instance on build" do
+    it "should create a new sentry instance on create" do
       @model = Mocks::Post.make
       @subject = mock
-      @sentry = Sentry.build(@model, @subject)
+      @sentry = Sentry.create(@model, @subject)
       @sentry.should be_an_instance_of Mocks::PostSentry
       @sentry.model.should == @model
       @sentry.subject.should == @subject

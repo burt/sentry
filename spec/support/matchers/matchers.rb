@@ -62,7 +62,7 @@ module Support
 
       def matches?(subject)
         @subject = subject
-        @sentry = Sentry.build(@model, @subject, @options)
+        @sentry = Sentry.create(@model, @subject, @options)
 
         begin
           @result = @sentry.action_permitted?(@method)
