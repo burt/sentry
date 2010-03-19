@@ -61,8 +61,41 @@ describe Sentry::Right do
   
   describe "the sentry module" do
     
-    it "should have singleton rights access that is fully rspec'd" do
-      pending
+    it "should respond to rights" do
+      Sentry.should respond_to :rights
+    end
+
+    it "should have a default set of rights" do
+      Sentry.rights.should be_an_instance_of(Hash)
+      Sentry.rights.size.should == 4
+      [:create, :read, :update, :delete].each { |r| Sentry.rights[r].should be_an_instance_of(Sentry::Right) }
+      Sentry.rights[:create].actions.sort.should == [:create, :new]
+      Sentry.rights[:read].actions.sort.should == [:index, :show]
+      Sentry.rights[:update].actions.sort.should == [:edit, :update]
+      Sentry.rights[:delete].actions.sort.should == [:destroy]
+    end
+
+    describe "when rights is called with a block" do
+      
+      before :each do
+        @original_rights = Sentry.rights
+        @returned = Sentry.rights do
+          manage
+        end
+      end
+
+      it "should return the new rights" do
+        pending
+      end
+
+      it "should overwrite the rights singleton" do
+        pending
+      end
+
+      it "should configure the new rights" do
+        pending
+      end
+      
     end
     
   end

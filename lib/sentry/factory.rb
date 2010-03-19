@@ -13,7 +13,7 @@ module Sentry
       s = sentry_class.new
       s.model = @model
       s.subject = @subject
-      s.options = @options
+      s.authorize = @options[:authorize] == true
       s.enabled = Sentry.configuration.enabled
       s.rights = Sentry.rights
       s.setup

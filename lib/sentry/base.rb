@@ -1,15 +1,11 @@
 module Sentry
   class Base
 
-    attr_accessor :model, :subject, :rights, :options, :enabled, :current_method
+    attr_accessor :model, :subject, :rights, :authorize, :enabled, :current_right
     
     def initialize
       @enabled = true
-      @options = {}
-    end
-    
-    def authorizer?
-      @options[:authorize] == true
+      @authorize = false
     end
     
     def permitted?; false; end
@@ -26,6 +22,14 @@ module Sentry
     
     def right_permitted?(right)
       self.send(right.method_name)
+    end
+
+    def current_method
+      current_right.nil? ? nil : current_right.name
+    end
+
+    def current_actions
+      current_right.nil? ? [] : current_right.actions
     end
     
     def each_right
@@ -48,7 +52,7 @@ module Sentry
           alias_method alias_name, method
           define_method(method) do
             
-            instance.current_method = v.name
+            instance.current_right = v
 
             permitted = if !instance.enabled
               true
@@ -60,10 +64,12 @@ module Sentry
               instance.send(alias_name)
             end
 
-            if instance.authorizer? && !permitted
+            if instance.authorize && !permitted
               raise Sentry::NotAuthorized, "Not permitted! [model=#{model}, subject=#{subject}]"
             end
-            
+
+            instance.current_right = nil        
+      
             permitted
           end
         end

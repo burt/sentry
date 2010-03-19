@@ -5,13 +5,15 @@ module Support
 
     class Permit
 
-      def initialize(method, is_action = false)
+      def initialize(method, authorize = nil, is_action = false)
         @method = method
+        @authorize = authorize
         @is_action = is_action
       end
 
       def matches?(sentry)
         @sentry = sentry
+        @sentry.authorize = @authorize unless @authorize.nil?
 
         begin
           @result = if @is_action
@@ -47,7 +49,7 @@ module Support
       end
 
       def authorizer?
-        @sentry && @sentry.authorizer?
+        @sentry && @sentry.authorize
       end
 
     end
@@ -90,17 +92,17 @@ module Support
       end
 
       def authorizer?
-        @sentry && @sentry.authorizer?
+        @sentry && @sentry.authorize
       end
 
     end
 
-    def permit(method)
-      Permit.new(method)
+    def permit(method, authorize = nil)
+      Permit.new(method, authorize)
     end
 
-    def permit_action(action)
-      Permit.new(action, true)
+    def permit_action(action, authorize = nil)
+      Permit.new(action, authorize, true)
     end
 
     def be_able_to(method, model, options = {})

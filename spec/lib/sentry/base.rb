@@ -10,26 +10,29 @@ describe Sentry::Base do
       @sentry = Sentry::Base.new
     end
     
-    it "should have the readers model, subject, rights, options, current_method and enabled" do
-      @sentry.should respond_to(:model, :subject, :rights, :options, :current_method, :enabled)
+    it "should have the accessors model, subject, rights, authorize, current_right and enabled" do
+      @sentry.should respond_to(:model, :subject, :rights, :authorize, :current_right, :enabled)
     end
     
     it "should respond to permitted?, forbidden?, each_right, action_permitted? and right_permitted?" do
       @sentry.should respond_to(:permitted?, :forbidden?, :action_permitted?, :right_permitted?)
     end
+
+    it "should have a nil current_method" do
+      @sentry.current_method.should be_nil
+    end
+
+    it "should have an empty array of current actions" do 
+      @sentry.current_actions.should == []
+    end
     
-    it "should not be an authorizer" do
-      @sentry.authorizer?.should be_false
+    it "should have authorize set to false" do
+      @sentry.authorize.should be_false
     end
     
     it "should not be permitted or forbidden" do
       @sentry.permitted?.should be_false
       @sentry.forbidden?.should be_false
-    end
-    
-    it "should have an empty options hash" do
-      @sentry.options.should be_an_instance_of(Hash)
-      @sentry.options.should be_empty
     end
     
     it "should be enabled" do
@@ -106,7 +109,7 @@ describe Sentry::Base do
           end   
           
           it "should raise Sentry::NotAuthorized when the method is not_permitted and the sentry is an authorizer" do
-            @sentry.options[:authorize] = true
+            @sentry.authorize = true
             @sentry.each_right do |k, v|  
               @sentry.should_not permit(v.method_name) unless v.default
             end
@@ -149,26 +152,22 @@ describe Sentry::Base do
 
       it "should permit can_create?" do
         @sentry.should permit(:can_create?)
-        @sentry.options[:authorize] = true
-        @sentry.should permit(:can_create?)
+        @sentry.should permit(:can_create?, true)
       end
 
       it "should permit can_read?" do
         @sentry.should permit(:can_read?)
-        @sentry.options[:authorize] = true
-        @sentry.should permit(:can_read?)
+        @sentry.should permit(:can_read?, true)
       end
 
       it "should permit can_update?" do
         @sentry.should permit(:can_update?)
-        @sentry.options[:authorize] = true
-        @sentry.should permit(:can_update?)
+        @sentry.should permit(:can_update?, true)
       end
 
       it "should not permit can_delete?" do
         @sentry.should_not permit(:can_delete?)
-        @sentry.options[:authorize] = true
-        @sentry.should_not permit(:can_delete?)
+        @sentry.should_not permit(:can_delete?, true)
       end
 
       it "should permit can_delete? when disabled" do
@@ -192,12 +191,40 @@ describe Sentry::Base do
         @sentry.should_not permit(:can_delete?)
       end   
      
-      it "should set the current_method to the last can_ called" do
+      it "should have a nil current_right before and after each can_ call" do
+        @sentry.current_right.should be_nil
+        @sentry.each_right do |k, v|
+          @sentry.right_permitted?(v)
+        end
+        @sentry.current_right.should be_nil
+      end
+
+      it "should have a nil current_method before and after each can_ call" do
         @sentry.current_method.should be_nil
         @sentry.each_right do |k, v|
           @sentry.right_permitted?(v)
-          @sentry.current_method.should == v.name
         end
+        @sentry.current_method.should be_nil
+      end
+
+      it "should have an empty array for current_actions before and after each can_ call" do
+        @sentry.current_actions.should == []
+        @sentry.each_right do |k, v|
+          @sentry.right_permitted?(v)
+        end
+        @sentry.current_actions.should == []
+      end
+
+      it "should have the appropriate current_right during each can_ call" do
+        pending
+      end
+
+      it "should have the appropriate current_method during each can_ call" do
+        pending
+      end
+
+      it "should have the appropriate current_actions during each can_ call" do
+        pending
       end
 
     end
