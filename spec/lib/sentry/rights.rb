@@ -80,20 +80,24 @@ describe Sentry::Right do
       before :each do
         @original_rights = Sentry.rights
         @returned = Sentry.rights do
-          manage
+          view; add; delete; edit
         end
       end
 
       it "should return the new rights" do
-        pending
+        @returned.should_not == @original_rights
+        @returned.should be_an_instance_of(Hash)  
+        
+        @returned.size.should == 4
       end
 
       it "should overwrite the rights singleton" do
-        pending
+        Sentry.rights.should_not == @original_rights
+        Sentry.rights.should == @returned
       end
 
       it "should configure the new rights" do
-        pending
+        %w{ view add delete edit }.each { |i| @returned[i.to_sym].should be_an_instance_of(Sentry::Right) }
       end
       
     end

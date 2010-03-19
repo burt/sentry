@@ -19,7 +19,7 @@ Spec::Runner.configure do |config|
   
   config.before do
     Sentry.configuration = Sentry::Configuration.new
-    Sentry.rights do
+    @rights = Sentry.rights = Sentry.rights do
       create { actions :new, :create }
       read { actions :show, :index; default true }
       update { actions :edit, :update }
@@ -89,6 +89,14 @@ module Mocks
 
   class User
     attr_accessor :name
+  end
+
+  class CurrentRightTestSentry < Sentry::Base
+    Sentry.rights.each do |k, v|
+      define_method v.method_name do
+        self.current_right == v
+      end
+    end
   end
   
 end

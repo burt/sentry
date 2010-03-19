@@ -1,9 +1,5 @@
 describe Sentry::Base do
 
-  before :each do
-    @rights = Sentry.rights
-  end
-
   describe "a new sentry base" do
     
     before :each do
@@ -42,7 +38,7 @@ describe Sentry::Base do
     describe "with the rights create, read, update and delete" do
 
       before :each do
-        @sentry.rights = Sentry.rights
+        @sentry.rights = @rights
       end
 
       it "should yield the rights create, read, update and delete on each_right" do
@@ -193,38 +189,37 @@ describe Sentry::Base do
      
       it "should have a nil current_right before and after each can_ call" do
         @sentry.current_right.should be_nil
-        @sentry.each_right do |k, v|
-          @sentry.right_permitted?(v)
-        end
+        @sentry.each_right { |k, v| @sentry.right_permitted?(v) }
         @sentry.current_right.should be_nil
       end
 
       it "should have a nil current_method before and after each can_ call" do
         @sentry.current_method.should be_nil
-        @sentry.each_right do |k, v|
-          @sentry.right_permitted?(v)
-        end
+        @sentry.each_right { |k, v| @sentry.right_permitted?(v) }
         @sentry.current_method.should be_nil
       end
 
       it "should have an empty array for current_actions before and after each can_ call" do
         @sentry.current_actions.should == []
-        @sentry.each_right do |k, v|
-          @sentry.right_permitted?(v)
-        end
+        @sentry.each_right { |k, v| @sentry.right_permitted?(v) }
         @sentry.current_actions.should == []
       end
 
       it "should have the appropriate current_right during each can_ call" do
-        pending
+        @sentry = Mocks::CurrentRightTestSentry.new
+        @sentry.each_right do |k, v|
+          @sentry.send(v.method_name).should == true
+        end
       end
 
-      it "should have the appropriate current_method during each can_ call" do
-        pending
+      it "should have the current_method create when the current right is the create right" do
+        @sentry.current_right = @rights[:create]
+        @sentry.current_method.should == :create
       end
 
-      it "should have the appropriate current_actions during each can_ call" do
-        pending
+      it "should have the current_actions new and create when the current right is the create right" do
+        @sentry.current_right = @rights[:create]
+        @sentry.current_actions.sort.should == [:create, :new]
       end
 
     end
