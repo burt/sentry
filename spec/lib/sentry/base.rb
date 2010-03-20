@@ -219,7 +219,7 @@ describe Sentry::Base do
 
       it "should have the current_actions new and create when the current right is the create right" do
         @sentry.current_right = @rights[:create]
-        @sentry.current_actions.sort.should == [:create, :new]
+        @sentry.current_actions.map(&:to_s).sort.should == %w{ create new }
       end
 
     end

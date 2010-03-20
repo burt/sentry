@@ -1,3 +1,9 @@
+- differentiate between current action and method in sentry
+
+- includable rights
+- array of sources to iterate over
+- pass authorize into right permitted (instead of having it as an option)
+
 
 Aggregate rights, e.g.
   

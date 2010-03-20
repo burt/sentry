@@ -69,10 +69,10 @@ describe Sentry::Right do
       Sentry.rights.should be_an_instance_of(Hash)
       Sentry.rights.size.should == 4
       [:create, :read, :update, :delete].each { |r| Sentry.rights[r].should be_an_instance_of(Sentry::Right) }
-      Sentry.rights[:create].actions.sort.should == [:create, :new]
-      Sentry.rights[:read].actions.sort.should == [:index, :show]
-      Sentry.rights[:update].actions.sort.should == [:edit, :update]
-      Sentry.rights[:delete].actions.sort.should == [:destroy]
+      Sentry.rights[:create].actions.map(&:to_s).sort.should == %w{ create new }
+      Sentry.rights[:read].actions.map(&:to_s).sort.should == %w{ index show }
+      Sentry.rights[:update].actions.map(&:to_s).sort.should == %w{ edit update }
+      Sentry.rights[:delete].actions.map(&:to_s).sort.should == %w{ destroy }
     end
 
     describe "when rights is called with a block" do
