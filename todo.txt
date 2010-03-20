@@ -1,3 +1,7 @@
+- test models from strings in factory
+
+- add and test models from symbols
+
 - array of sources to iterate over
 
 - includable rights, e.g.
