@@ -1,27 +1,10 @@
-# TODO: rspec
-# TODO: raise bad params
-# TODO: check controllers don't already define methods
-
 module Sentry
-  module Rails
+  module RailsController
     
     def self.included(base)
       base.send :extend, ClassMethods
       base.rescue_from Sentry::NotAuthorized, :with => :not_authorized
-    end
-    
-    def initialize
-      super
-      instance = self
-      Sentry.rights.each do |k, v|
-        (class << self; self; end).class_eval do
-          define_method(v.method_name) do |model, *args|
-            sentry = Sentry.create(model, sentry_user, args.extract_options!)
-            sentry.send(v.method_name)
-          end
-        end
-        self.class.send :helper_method, v.method_name
-      end
+      add_sentry_methods(base)
     end
 
     def not_authorized
@@ -32,6 +15,21 @@ module Sentry
     
     def sentry_user
       self.send Sentry.configuration.user_method
+    end
+    
+    private
+    
+    def self.add_sentry_methods(base)
+      base.instance_eval do
+        Sentry.rights.each do |k, v|
+          method = v.method_name
+          define_method(method) do |model, *args|
+            sentry = Sentry.create(model, sentry_user, args.extract_options!)
+            sentry.send(method)
+          end
+          helper_method method
+        end
+      end
     end
     
     module ClassMethods
@@ -49,27 +47,27 @@ module Sentry
       end
       
       def authorize(*args)
-        before_filter(*args) do |sentry, controller|
-          sentry.options.merge!(:authorize => true)
+        before_filter(*args) do |sentry, controller, options|
+          sentry.authorize = true
           sentry.action_permitted?(controller.action_name)
         end
       end
       
       def filter(*args)
-        before_filter(*args) do |sentry, controller|
-          sentry.filter(controller.action_name) if sentry.respond_to? :filter
+        before_filter(*args) do |sentry, controller, options|
+          sentry.filter(controller.action_name, options) if sentry.respond_to? :filter
         end
       end
       
       private
       
-      def before_filter(*args)    
+      def before_filter(*args)
         opts = prep_filter_options(*args)
-        @klass.before_filter(opts) do |controller|
+        @klass.before_filter(opts.clone) do |controller|
           model = get_model(controller, opts)
           user = controller.sentry_user
           sentry = Sentry.create(model, user, opts)
-          yield sentry, controller
+          yield sentry, controller, opts
         end
       end
       

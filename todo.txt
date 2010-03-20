@@ -1,22 +1,18 @@
-- differentiate between current action and method in sentry
-
-- includable rights
 - array of sources to iterate over
-- pass authorize into right permitted (instead of having it as an option)
 
+- includable rights, e.g.
 
-Aggregate rights, e.g.
-  
-  Sentry.rights do
-    create; read; update; delete
+    Sentry.rights do
+      create; read; update; delete
     
-    manage do
-      includes create, read, update, delete
-      # find all the included rights on the parent
-      # true if all pass
+      manage do
+        includes create, read, update, delete
+        # find all the included rights on the parent
+        # true if all pass
+      end
+    
     end
-    
-  end
+  
+    # can_manage?(@post)
 
 
-  # can_manage?(@post)

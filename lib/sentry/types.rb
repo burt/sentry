@@ -1,9 +1,8 @@
 class ArraySentry < Sentry::Base
   
-  def filter(action)
+  def filter(action, options = {})
     model.reject! do |m|
-      sentry = Sentry.create(m, @subject, @options)
-      !sentry.action_permitted?(action)
+      !Sentry.create(m, @subject, options).action_permitted?(action)
     end
   end
   

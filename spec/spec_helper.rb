@@ -7,9 +7,11 @@ require 'sham'
 require 'faker'
 require 'mocha'
 require 'active_support'
+require 'action_controller'
 require 'pp'
 
 require 'sentry'
+require 'sentry/rails'
 require 'support/matchers/matchers'
 
 Spec::Runner.configure do |config|
@@ -97,6 +99,10 @@ module Mocks
         self.current_right == v
       end
     end
+  end
+  
+  class ApplicationController < ActionController::Base
+    include Sentry::RailsController
   end
   
 end
