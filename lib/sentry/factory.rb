@@ -11,7 +11,7 @@ module Sentry
     
     def create
       s = sentry_class.new
-      s.model = @model
+      s.model = model
       s.subject = @subject
       s.authorize = @options[:authorize] == true
       s.enabled = Sentry.configuration.enabled
@@ -32,7 +32,11 @@ module Sentry
     end
     
     def sentry_class_name
-      @options[:class].nil? ? "#{@model.class.name}Sentry" : @options[:class].to_s
+      @options[:class].nil? ? "#{model.class.name}Sentry" : @options[:class].to_s
+    end
+    
+    def model
+      @model.is_a?(String) ? @model.constantize.new : @model
     end
     
   end
