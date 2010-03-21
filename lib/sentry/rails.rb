@@ -62,7 +62,7 @@ module Sentry
       
         def before_filter(*args)
           opts = prep_filter_options(*args)
-          opts.merge!(:sentry => @sentry) unless @sentry.nil?
+          opts.reverse_merge!(:sentry => @sentry) unless @sentry.nil?
           @klass.before_filter(opts.clone) do |controller|
             model = get_model(controller, opts)
             user = controller.sentry_user
@@ -80,7 +80,7 @@ module Sentry
               if model.to_s.include?("@")
                 controller.instance_variable_get(model)
               else
-                controller.send(model, true)
+                controller.send(model)
               end
             else
               model
