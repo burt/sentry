@@ -4,14 +4,6 @@ class ArraySentry < Sentry::Base
     model.reject! { |m| !sentry_for_member(m).action_permitted?(action) }
   end
   
-  def forbidden?
-    model.any? { |m| sentry_for_member(m).forbidden? }
-  end
-  
-  def permitted?
-    model.all? { |m| sentry_for_member(m).permitted? }
-  end
-  
   private
   
   def member_options
