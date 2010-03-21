@@ -4,7 +4,7 @@ class ArraySentry < Sentry::Base
     member_options = options.clone
     member_options[:sentry] = options[:member_sentry]
     model.reject! do |m|
-      !Sentry.create(m, @subject, options).action_permitted?(action)
+      !Sentry.create(m, @subject, member_options).action_permitted?(action)
     end
   end
   
