@@ -41,6 +41,10 @@ module Sentry
       end
     end
     
+    def filter
+      model.reject! { |m| yield m }
+    end
+    
     def setup
       instance = self
       each_right do |k, v|
