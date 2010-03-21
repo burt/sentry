@@ -55,7 +55,7 @@ module Sentry
       
         def filter(*args)
           before_filter(*args) do |sentry, controller, options|
-            sentry.filter(controller.action_name) if sentry.respond_to?(:filter)
+            sentry.filter(options[:action] || controller.action_name) if sentry.respond_to?(:filter)
           end
         end
       
