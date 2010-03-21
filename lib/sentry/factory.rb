@@ -36,7 +36,7 @@ module Sentry
     end
     
     def model
-      @model.is_a?(String) ? @model.constantize.new : @model
+      @model.is_a?(String) || @model.is_a?(Symbol) ? @model.to_s.constantize.new : @model
     end
     
   end

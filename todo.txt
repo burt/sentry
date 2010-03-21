@@ -1,6 +1,4 @@
-- test models from strings in factory
-
-- add and test models from symbols
+- test models from strings and symbols in factory
 
 - array of sources to iterate over
 
