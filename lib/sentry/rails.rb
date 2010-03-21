@@ -77,7 +77,11 @@ module Sentry
             when Proc
               controller.instance_eval(&model)
             when String, Symbol
-              controller.instance_variable_get("@#{model}")
+              if model.to_s.include?("@")
+                controller.instance_variable_get(model)
+              else
+                controller.send(model, true)
+              end
             else
               model
           end
