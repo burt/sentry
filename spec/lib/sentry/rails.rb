@@ -1,4 +1,4 @@
-describe Sentry::RailsController do
+describe Sentry::Rails::Authorisation do
   
   describe "a Mocks::ApplicationController" do
     

@@ -102,7 +102,7 @@ module Mocks
   end
   
   class ApplicationController < ActionController::Base
-    include Sentry::RailsController
+    include Sentry::Rails::Authorisation
   end
   
 end
