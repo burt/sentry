@@ -32,7 +32,7 @@ module Sentry
     end
     
     def sentry_class_name
-      @options[:class].nil? ? "#{model.class.name}Sentry" : @options[:class].to_s
+      @options[:sentry].nil? ? "#{model.class.name}Sentry" : @options[:sentry].to_s
     end
     
     def model

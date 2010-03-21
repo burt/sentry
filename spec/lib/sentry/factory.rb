@@ -83,7 +83,7 @@ describe Sentry::Factory do
       describe "and the class option set to Mocks::PostSentry2" do
         
         before :each do
-          @options = {:class => 'Mocks::PostSentry2'}
+          @options = {:sentry => 'Mocks::PostSentry2'}
           @factory = Sentry::Factory.new(@model, @subject, @options)
         end
       
@@ -107,7 +107,7 @@ describe Sentry::Factory do
     end
     
     it "should raise Sentry::InvalidSentry when the corresponding sentry class does not inherit from Sentry::Base" do
-      @factory = Sentry::Factory.new(mock, mock, :class => 'Mocks::BadSentry')
+      @factory = Sentry::Factory.new(mock, mock, :sentry => 'Mocks::BadSentry')
       lambda { @factory.create }.should raise_error(Sentry::InvalidSentry)
     end
 
