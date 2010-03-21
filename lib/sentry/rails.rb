@@ -77,7 +77,7 @@ module Sentry
             when Proc
               controller.instance_eval(&model)
             when String, Symbol
-              controller.instance_variable_get("@#{model_opt}")
+              controller.instance_variable_get("@#{model}")
             else
               model
           end
