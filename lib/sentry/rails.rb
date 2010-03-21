@@ -72,11 +72,14 @@ module Sentry
         end
       
         def get_model(controller, opts)
-          model_opt = opts[:with]          
-          model = if model_opt.is_a?(Proc)
-            controller.instance_eval(&model_opt)
-          else
-            controller.instance_variable_get("@#{model_opt}")
+          model = opts[:with]
+          case model
+            when Proc
+              controller.instance_eval(&model)
+            when String, Symbol
+              controller.instance_variable_get("@#{model_opt}")
+            else
+              model
           end
         end
 
