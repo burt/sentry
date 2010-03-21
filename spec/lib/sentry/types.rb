@@ -1,3 +1,0 @@
-describe ArraySentry do
-  
-end
