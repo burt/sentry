@@ -16,6 +16,7 @@ module Sentry
       s.authorize = @options[:authorize] == true
       s.enabled = Sentry.configuration.enabled
       s.rights = Sentry.rights
+      s.options = @options
       s.setup
     end
     

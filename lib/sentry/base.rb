@@ -1,11 +1,12 @@
 module Sentry
   class Base
 
-    attr_accessor :model, :subject, :rights, :authorize, :enabled, :current_right
+    attr_accessor :model, :subject, :rights, :authorize, :enabled, :current_right, :options
     
     def initialize
       @enabled = true
       @authorize = false
+      @options = {}
     end
     
     def permitted?; false; end
