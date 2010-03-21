@@ -34,16 +34,21 @@ module Sentry
     
       module ClassMethods
       
-        def sentry(&block)
-          FilterBuilder.new(self).instance_eval(&block)
+        def with_sentry(sentry, &block)
+          FilterBuilder.new(self, sentry).instance_eval(&block)
+        end
+        
+        def authorize(*args)
+          FilterBuilder.new(self).authorize(*args)
         end
       
       end
     
       class FilterBuilder
       
-        def initialize(klass)
+        def initialize(klass, sentry = nil)
           @klass = klass
+          @sentry = sentry
         end
       
         def authorize(*args)
@@ -53,16 +58,11 @@ module Sentry
           end
         end
       
-        def filter(*args)
-          before_filter(*args) do |sentry, controller, options|
-            sentry.filter(options[:action] || controller.action_name) if sentry.respond_to?(:filter)
-          end
-        end
-      
         private
       
         def before_filter(*args)
           opts = prep_filter_options(*args)
+          opts.merge!(:sentry => @sentry) unless @sentry.nil?
           @klass.before_filter(opts.clone) do |controller|
             model = get_model(controller, opts)
             user = controller.sentry_user
