@@ -44,31 +44,4 @@ module Sentry
 
   end
 
-  class << self
-    attr_accessor :rights
-  end
-
-  def self.rights(&block)
-    if block_given?
-      @rights = Sentry::RightsBuilder.new.instance_eval(&block).rights
-    else
-      @rights
-    end
-  end
-
-end
-
-Sentry.rights do
-  create do
-    actions :new, :create
-  end
-  read do
-    actions :index, :show
-  end
-  update do
-    actions :edit, :update
-  end
-  delete do
-    actions :destroy
-  end
 end

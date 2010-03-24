@@ -1,6 +1,7 @@
 module Sentry
   module Rails
     module Authorisation
+      
       def self.included(base)
         base.send :extend, ClassMethods
         base.rescue_from Sentry::NotAuthorized, :with => :not_authorized

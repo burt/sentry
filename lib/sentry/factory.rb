@@ -10,7 +10,7 @@ module Sentry
     end
     
     def create
-      s = sentry_class.new
+      s = new_sentry
       s.model = model
       s.subject = @subject
       s.authorize = @options[:authorize] == true
@@ -20,24 +20,32 @@ module Sentry
       s.setup
     end
     
-    def sentry_class
-      klass = begin
-        sentry_class_name.constantize
+    # TODO: test passing the sentry class is as well as the name
+    # TODO: differentiate between bad instantiation and class not found errors
+    def new_sentry
+      sentry = begin
+        sentry_class = @options[:sentry] || "#{model.class.name}Sentry"
+        instantiate(sentry_class)
       rescue => e
-        raise Sentry::SentryNotFound, "Sentry '#{sentry_class_name}' is not defined"
+        raise Sentry::SentryNotFound, "Sentry '#{sentry_class}' is not defined"
       end
-      unless klass.ancestors.include?(Sentry::Base)
-        raise Sentry::InvalidSentry, "Sentry '#{sentry_class_name}' does not extend Sentry::Base"
+      unless sentry.class.ancestors.include?(Sentry::Base)
+        raise Sentry::InvalidSentry, "Sentry '#{sentry_class}' does not extend Sentry::Base"
       end
-      klass
-    end
-    
-    def sentry_class_name
-      @options[:sentry].nil? ? "#{model.class.name}Sentry" : @options[:sentry].to_s
+      sentry
     end
     
     def model
-      @model.is_a?(String) || @model.is_a?(Symbol) ? @model.to_s.constantize.new : @model
+      instantiate(@model)
+    end
+    
+    def instantiate(klass)
+      case klass
+        when String, Symbol
+          klass.to_s.constantize.new
+        else
+          klass
+      end
     end
     
   end

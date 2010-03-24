@@ -67,10 +67,6 @@ describe Sentry::Factory do
       end
 
       describe "and no options" do
-
-        it "should have a sentry class name of Mocks::PostSentry" do
-          @factory.sentry_class_name.should == 'Mocks::PostSentry'
-        end
       
         it "should return an instance of Mocks::PostSentry on create" do
           @factory.create.should be_an_instance_of Mocks::PostSentry
@@ -85,10 +81,6 @@ describe Sentry::Factory do
         before :each do
           @options = {:sentry => 'Mocks::PostSentry2'}
           @factory = Sentry::Factory.new(@model, @subject, @options)
-        end
-      
-        it "should have a sentry class name of Mocks::PostSentry2" do
-          @factory.sentry_class_name.should == 'Mocks::PostSentry2'
         end
         
         it "should return an instance of Specs::PostSentry2 on create" do

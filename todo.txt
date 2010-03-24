@@ -1,6 +1,6 @@
-- test models from strings and symbols in factory
+- Sentry.enabled helper
 
-- array of sources to iterate over
+- test models from strings and symbols in factory
 
 - includable rights, e.g.
 

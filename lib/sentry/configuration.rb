@@ -14,16 +14,4 @@ module Sentry
     end    
   end
 
-  class << self
-    attr_accessor :configuration
-  end
-
-  def self.configure(&block)
-    config = Configuration.new
-    yield(config)
-    self.configuration = config
-  end
-
 end
-
-Sentry.configuration = Sentry::Configuration.new
