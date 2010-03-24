@@ -43,6 +43,8 @@ module Sentry
       case klass
         when String, Symbol
           klass.to_s.constantize.new
+        when Class
+          klass.new
         else
           klass
       end
