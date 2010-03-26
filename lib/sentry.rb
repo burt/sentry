@@ -20,6 +20,11 @@ module Sentry
       @rights
     end
   end
+  
+  # TODO: spec
+  def self.actions
+    self.rights.values.map(&:actions).flatten
+  end
 
   def self.configure(&block)
     config = Configuration.new
