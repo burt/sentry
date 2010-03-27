@@ -4,7 +4,6 @@ unless ActionController::Base.respond_to? :sentry_filters
 end
 
 class Class
-  
   def superclass_count
     if @count.nil?
       @count, current = -1, self
@@ -12,17 +11,14 @@ class Class
     end
     @count
   end
-  
 end
 
 class Array
-  
   def max_by_field(field)
     return [] if empty?
     max = max { |a, b| a.send(field) <=> b.send(field) }
     select { |i| i.send(field) == max.send(field) }
   end
-  
 end
 
 module Sentry
@@ -72,37 +68,25 @@ module Sentry
             unless controller.class.sentry_filters.empty?
               action = controller.action_name.to_sym
               filters = controller.class.sentry_filters.select { |f| f.actions.include?(action) }
-              filters = filters.max_by_field :level
-              filters = filters.max_by_field :precedence
-              puts "actions that match:"
-              filters.each do |f|
-                puts f.inspect
-                puts "level=#{f.level}, precedence=#{f.precedence}"
-                f.run(action, controller)
-              end
+              filters = filters.max_by_field(:level).max_by_field(:precedence)
+              filters.each { |f| f.run(action, controller) }
             end
           end
         end
       end
-      
-      def filters_with_max_for_field(filters, field)
-        return [] if filters.empty?
-        max = filters.max { |a, b| a.send(field) <=> b.send(field) }
-        filters.select { |f| f.send(field) == max.send(field) }
-      end
     
       class FilterBuilder
       
-        def initialize(klass, sentry = nil)
-          @klass = klass
+        def initialize(controller_class, sentry = nil)
+          @controller_class = controller_class
           @sentry = sentry
         end
         
         def method_missing(sym, *args, &block)
           filter_class = "Sentry::Rails::Authorisation::#{sym.to_s.capitalize}Filter"
-          filter = filter_class.constantize.new(@klass, @sentry, *args, &block)
-          @klass.sentry_filters << filter
-        end
+          filter = filter_class.constantize.new(@controller_class, @sentry, *args, &block)
+          @controller_class.sentry_filters << filter
+        end 
         
       end
       
@@ -111,24 +95,22 @@ module Sentry
         class_inheritable_accessor :precedence
         @@subclass_count = 0
 
-        attr_accessor :klass, :actions
+        attr_accessor :controller_class, :actions
 
-        def initialize(klass, sentry = nil, *args, &block)
-          @klass = klass
+        def initialize(controller_class, sentry = nil, *args, &block)
+          @controller_class = controller_class
           @sentry = sentry
           @opts = args.extract_options!
           @opts.reverse_merge!(:sentry => @sentry) unless @sentry.nil?
           @actions = args
           @actions = Sentry.actions if @actions.include?(:all)
-          puts "options: #{@opts}"
-          puts "actions: #{@actions}"
-          # TODO: add excludable actions
+          @actions -= [*@opts[:except]].compact
         end
 
         def run(action, controller); end
         
         def level
-          @klass.superclass_count
+          @controller_class.superclass_count
         end
         
         def precedence
@@ -146,10 +128,14 @@ module Sentry
 
       class AuthorizeFilter < Sentry::Rails::Authorisation::Filter; 
         
+        def initialize(controller_class, sentry = nil, *args, &block)
+          super
+          raise "authorize requires the :with option" if @opts[:with].nil?
+        end
+        
         def run(action, controller)
-          puts ">>> run in authorize filter"
           user = controller.sentry_user
-          model = get_model(controller, @opts)
+          model = get_model(controller)
           sentry = Sentry.create(model, user, @opts)
           sentry.authorize = true
           sentry.action_permitted?(action)
@@ -157,9 +143,8 @@ module Sentry
         
         private
         
-        def get_model(controller, opts)
-          # TODO: raise if no with
-          model = opts[:with]
+        def get_model(controller)
+          model = @opts[:with]
           case model
             when Proc
               controller.instance_eval(&model)
