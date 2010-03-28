@@ -138,8 +138,6 @@ module Sentry
           model = get_model(controller)
           sentry = Sentry.create(model, user, @opts)
           sentry.authorize = true
-          sentry.options[:current_action] = action
-          sentry.options[:controller] = controller
           sentry.action_permitted?(action)
         end
         
