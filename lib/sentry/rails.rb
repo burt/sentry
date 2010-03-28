@@ -128,11 +128,6 @@ module Sentry
 
       class AuthorizeFilter < Sentry::Rails::Authorisation::Filter; 
         
-        def initialize(controller_class, sentry = nil, *args, &block)
-          super
-          raise "authorize requires the :with option" if @opts[:with].nil?
-        end
-        
         def run(action, controller)
           user = controller.sentry_user
           model = get_model(controller)
