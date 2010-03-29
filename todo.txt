@@ -1,6 +1,6 @@
-- Sentry.enabled helper
-
-- test models from strings and symbols in factory
+- Check any rspec todos
+- Add the rails controller filter after every other filter!
+- Add logging support
 
 - includable rights, e.g.
 
@@ -16,76 +16,3 @@
     end
   
     # can_manage?(@post)
-    
-    # Filters added to this controller apply to all controllers in the application.
-# Likewise, all the methods added will be available for all controllers.
-
-unless ActionController::Base.respond_to? :sentry_filters
-  puts "writing sentry filters to base"
-  ActionController::Base.send :class_inheritable_accessor, :sentry_filters
-  ActionController::Base.sentry_filters = []
-end
-
-class FilterBuilder
-
-  def initialize(klass)
-    @klass = klass
-  end
-
-  def method_missing(sym, *args, &block)
-    filter = "FilterBuilder::#{sym.to_s.capitalize}Filter".constantize.new(@klass, *args, &block)
-    # @klass.sentry_filters << filter
-  end  
-
-  class Filter
-
-    cattr_accessor :precedence
-
-    def initialize(klass, *args, &block)
-      @klass = klass
-      puts ">>>>>>>>>>>>>>>>>>>>>>>>> init filter #{self}"
-      puts "klass :: #{klass}"
-      puts "sentry_filters :: #{klass.sentry_filters.inspect}"
-    end
-
-    def self.inherited(subclass)      
-      subclass.precedence = @@precedence_count ||= 0
-      @@precedence_count += 1
-      puts "================== #{subclass.inspect} inherited #{self}"
-    end
-
-  end
-
-  class DenyFilter < FilterBuilder::Filter; end
-
-  class AuthorizeFilter < FilterBuilder::Filter; end
-
-  class PermitFilter < FilterBuilder::Filter; end
-
-end
-
-class ApplicationController < ActionController::Base
-  helper :all # include all helpers, all the time
-  protect_from_forgery # See ActionController::RequestForgeryProtection for details
-
-  # Scrub sensitive parameters from your log
-  # filter_parameter_logging :password
-
-  # before_filter do |controller|
-  #   puts "before called #{controller.class.sentry_filters.inspect} #{controller.sentry_filters.inspect}"
-  # end
-
-  def self.controller_actions
-    self.public_instance_methods - ActionController::Base.public_instance_methods
-  end
-
-  def self.with_sentry(&block)
-    puts "with_sentry called :: #{self.sentry_filters}"
-    FilterBuilder.new(self).instance_eval(&block)
-  end
-
-
-end
-
-
-
