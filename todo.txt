@@ -5,6 +5,8 @@
 for example:
   authorize :index, :with => :nothing
 
+- add overrides to the permit, authorize and deny rules - such that a lambda expression can be evaulated without the use of a sentry
+
 - includable rights, e.g.
 
     Sentry.rights do
