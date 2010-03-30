@@ -1,5 +1,4 @@
 - Check any rspec todos
-- Add the rails controller filter after every other filter!
 - Add logging support
 - Allow sentries to be created without a model - or specify some override behaviour to permit it, 
 for example:

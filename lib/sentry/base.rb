@@ -50,36 +50,33 @@ module Sentry
       each_right do |k, v|
         (class << self; self; end).class_eval do
           method = v.method_name
-          
           define_method(method) { v.default } unless instance.respond_to?(method)
-          
           alias_name = "sentry_old_#{method}"
           alias_method alias_name, method
-          define_method(method) do
-            
-            instance.current_right = v
-
-            permitted = if !instance.enabled
-              true
-            elsif instance.forbidden?
-              false
-            elsif instance.permitted?
-              true
-            else
-              instance.send(alias_name)
-            end
-
-            if instance.authorize && !permitted
-              raise Sentry::NotAuthorized, "Not permitted! [model=#{model}, subject=#{subject}]"
-            end
-
-            instance.current_right = nil        
-      
-            permitted
-          end
+          define_method(method) { test_permitted(alias_name, v) }
         end
       end
       self
+    end
+    
+    private
+    
+    def test_permitted(method, right)
+      self.current_right = right
+      permitted = if !enabled
+        true
+      elsif forbidden?
+        false
+      elsif permitted?
+        true
+      else
+        send(method)
+      end
+      if authorize && !permitted
+        raise Sentry::NotAuthorized, "Not permitted! [model=#{self.model}, subject=#{self.subject}]"
+      end
+      self.current_right = nil
+      return permitted
     end
     
   end

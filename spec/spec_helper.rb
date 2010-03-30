@@ -66,7 +66,8 @@ module Mocks
     end
 
     def can_create?
-      model.new_record
+      puts "calling can_create? #{current_method} #{model.inspect} #{subject.inspect}"
+      model.new_record == true
     end
 
     def can_read?
