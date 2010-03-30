@@ -53,7 +53,7 @@ module Sentry
           
           define_method(method) { v.default } unless instance.respond_to?(method)
           
-          alias_name = "old_#{method}"
+          alias_name = "sentry_old_#{method}"
           alias_method alias_name, method
           define_method(method) do
             
