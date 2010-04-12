@@ -9,7 +9,6 @@ module Sentry
       end
       
       def method_missing(sym, *args, &block)
-        puts "\n\n>>>> calling.... #{sym}"
         filter_class = "Sentry::Rails::#{sym.to_s.capitalize}Filter"
         filter = filter_class.constantize.new(@controller_class, @sentry, *args, &block)
         @controller_class.sentry_filters << filter
@@ -32,6 +31,7 @@ module Sentry
         @actions = args
         @actions = Sentry.actions if @actions.include?(:all)
         @actions -= [*@opts[:except]].compact
+        @block = block
       end
 
       def run(action, controller); end
@@ -66,18 +66,23 @@ module Sentry
       private
       
       def get_model(controller)
-        model = @opts[:with]
-        case model
-          when Proc
-            controller.instance_eval(&model)
-          when String, Symbol
-            if model.to_s.include?("@")
-              controller.instance_variable_get(model)
+        if model = @opts[:with]
+          case model
+            when Proc
+              controller.instance_eval(&model)
+            when String, Symbol
+              if model.to_s.include?("@")
+                controller.instance_variable_get(model)
+              else
+                controller.send(model)
+              end
             else
-              controller.send(model)
-            end
-          else
-            model
+              model
+          end
+        elsif @block
+          controller.instance_eval(&@block)
+        else
+          raise "authorize expects a :with option or a block"
         end
       end
       
